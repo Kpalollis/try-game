@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171d19">
+  <title>Rhodes Island | Tactical Deployment</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #171d19;
+      --panel: #202923;
+      --panel-hi: #29332b;
+      --line: #465146;
+      --ink: #f0f1df;
+      --muted: #9da797;
+      --acid: #d7ed62;
+      --orange: #f19a56;
+      --red: #e76d56;
+      --cyan: #78d7c3;
+      --guard: #e5a159;
+      --defender: #79b9a2;
+      --sniper: #9fc8ed;
+      --caster: #c4a4e8;
+      --vanguard: #efcf6a;
+      --medic: #91c78a;
+      --specialist: #e4775d;
+      --supporter: #8db8d9;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px clamp(12px, 3vw, 36px) 28px;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 48% -15%, #45523d 0, transparent 44%),
+        repeating-linear-gradient(0deg, #ffffff04 0 1px, transparent 1px 5px),
+        var(--bg);
+      font-family: "Trebuchet MS", "Arial Narrow", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button { color: inherit; font: inherit; letter-spacing: 0; }
+    button:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
+
+    .app { width: min(1420px, 100%); margin: 0 auto; animation: enter 500ms ease-out both; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark { display: grid; width: 42px; aspect-ratio: 1; place-items: center; border: 1px solid var(--acid); color: var(--acid); font: 700 15px "Courier New", monospace; transform: rotate(-4deg); }
+    .brand-copy { display: grid; gap: 3px; }
+    .brand-copy strong { font: 700 12px "Courier New", monospace; letter-spacing: 0; }
+    .brand-copy span, .overline, .label, .resource-label, .stage, .button, .shop-cost, .bench-caption { font-family: "Courier New", monospace; letter-spacing: 0; }
+    .brand-copy span { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+    .resources { display: flex; align-items: center; gap: 8px; }
+    .resource { display: flex; align-items: center; gap: 9px; min-width: 92px; padding: 8px 11px; border-left: 1px solid var(--line); }
+    .resource-icon { display: grid; width: 24px; height: 24px; place-items: center; color: var(--acid); font: 700 15px "Courier New", monospace; }
+    .resource.health .resource-icon { color: var(--red); }
+    .resource-label { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; }
+    .resource-value { display: block; margin-top: 1px; font: 700 17px "Courier New", monospace; }
+
+    .title-row { display: flex; align-items: end; justify-content: space-between; gap: 16px; padding: 20px 0 15px; }
+    .overline { margin: 0 0 5px; color: var(--acid); font-size: 10px; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(24px, 3vw, 36px); line-height: 1; font-weight: 700; }
+    .title-note { max-width: 320px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; text-align: right; }
+
+    .workbench { display: grid; grid-template-columns: minmax(0, 1fr) 278px; align-items: start; gap: 22px; }
+    .main-column { min-width: 0; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 28px; margin-bottom: 8px; }
+    .section-heading h2 { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
+    .section-heading small { color: var(--muted); font: 10px "Courier New", monospace; }
+    .stage { padding: 6px 9px; border: 1px solid var(--line); color: var(--acid); font-size: 10px; text-transform: uppercase; }
+
+    .battlefield {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1.65;
+      min-height: 340px;
+      border: 1px solid #596153;
+      background: #222b25;
+      box-shadow: 0 18px 48px #0005;
+      isolation: isolate;
+    }
+    .battlefield::before { position: absolute; z-index: -1; inset: 0 0 50%; content: ""; background: linear-gradient(130deg, #632f2922, transparent 70%); }
+    .battlefield::after { position: absolute; z-index: -1; inset: 50% 0 0; content: ""; background: linear-gradient(130deg, #86a14314, transparent 70%); }
+    .tile-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(4, 1fr); }
+    .tile { position: relative; border: 0; border-right: 1px solid #e6ead40c; border-bottom: 1px solid #e6ead412; background: #b6c1a205; cursor: crosshair; }
+    .tile:nth-child(7n) { border-right: 0; }
+    .tile:nth-child(n+22) { border-bottom: 0; }
+    .tile:hover { background: #d7ed6210; }
+    .tile.enemy-zone { background-color: #aa63500a; }
+    .tile.home-zone { background-color: #d7ed6208; }
+    .zone-label { position: absolute; z-index: 1; left: 10px; color: #e1e4d24c; font: 9px "Courier New", monospace; letter-spacing: 0; pointer-events: none; }
+    .zone-label.enemy { top: 8px; }
+    .zone-label.home { bottom: 8px; }
+    .midline { position: absolute; z-index: 1; top: 50%; right: 0; left: 0; border-top: 1px dashed #e6ead427; pointer-events: none; }
+    .token-layer { position: absolute; inset: 0; pointer-events: none; }
+    .unit-chip {
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      width: calc(100% / 7 - 8px);
+      height: calc(25% - 8px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 4px 2px 6px;
+      border: 1px solid var(--role-color, var(--line));
+      background: #242d27f2;
+      box-shadow: 0 4px 12px #0007;
+      transform: translate(-50%, -50%);
+      transition: left 110ms linear, top 110ms linear, border-color 120ms ease, filter 120ms ease;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .unit-chip.enemy { border-color: #d8735f; background: #392825f2; }
+    .unit-chip.selected { outline: 2px solid var(--acid); outline-offset: 2px; }
+    .unit-chip.dead { opacity: .25; filter: grayscale(1); }
+    .unit-chip.hit { animation: hit 180ms ease-out; }
+    .unit-chip.combat-sprite {
+      width: clamp(34px, 6.7vw, 72px);
+      height: clamp(68px, 12vw, 106px);
+      gap: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      transform: translate(-50%, -91%);
+      transition: left 35ms linear, top 35ms linear, filter 120ms ease, opacity 120ms ease;
+    }
+    .unit-chip.combat-sprite.enemy { border: 0; background: transparent; }
+    .unit-chip.combat-sprite.selected { outline: 0; }
+    .combat-sprite .battle-figure { width: 100%; height: 100%; aspect-ratio: auto; overflow: visible; border: 0; background: transparent; box-shadow: none; }
+    .battle-figure .battle-art { position: absolute; z-index: 2; inset: 0; display: none; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+    .battle-figure.has-walk-art .walk-frame { display: block; }
+    .battle-figure.has-walk-art > svg { opacity: 0; }
+    .combat-sprite.faces-left .battle-figure .battle-art { transform: scaleX(-1); }
+    .battle-figure.has-attack-art .attack-frame { display: none; }
+    .combat-sprite.swing .battle-figure.has-attack-art .attack-frame { display: block; }
+    .combat-sprite.swing .battle-figure.has-attack-art .walk-frame { display: none; }
+    .combat-sprite.swing .battle-figure.has-attack-art:not(.has-walk-art) > svg { opacity: 0; }
+    .combat-sprite .battle-figure svg { overflow: visible; }
+    .combat-sprite.faces-left .battle-figure svg { transform: scaleX(-1); }
+    .combat-sprite .unit-name { position: absolute; bottom: -12px; left: 50%; width: 130%; transform: translateX(-50%); color: #fff; font-size: 8px; text-align: center; text-shadow: 0 1px 4px #000; }
+    .combat-sprite .unit-role { display: none; }
+    .combat-sprite .health-track { right: 7px; bottom: -18px; left: 7px; height: 4px; }
+    .combat-sprite .rank { position: absolute; top: -3px; right: -5px; color: var(--acid); font: 9px "Courier New", monospace; text-shadow: 0 1px 4px #000; }
+    .combat-sprite .sprite-walker { transform-box: fill-box; transform-origin: center bottom; animation: walk-bob 300ms ease-in-out infinite; }
+    .combat-sprite .sprite-leg-a, .combat-sprite .sprite-leg-b, .combat-sprite .sprite-arm-front, .combat-sprite .sprite-arm-back { transform-box: fill-box; transform-origin: 50% 12%; }
+    .combat-sprite .sprite-leg-a { animation: step-a 300ms ease-in-out infinite; }
+    .combat-sprite .sprite-leg-b { animation: step-b 300ms ease-in-out infinite; }
+    .combat-sprite .sprite-arm-back { animation: arm-a 300ms ease-in-out infinite; }
+    .combat-sprite .sprite-arm-front { animation: arm-b 300ms ease-in-out infinite; }
+    .combat-sprite .sprite-weapon { transform-box: fill-box; transform-origin: 12% 85%; }
+    .combat-sprite.swing .sprite-arm-front { animation: weapon-swing 190ms ease-out; }
+    .combat-sprite.swing .sprite-weapon { animation: weapon-swing 190ms ease-out; }
+    .combat-sprite.swing .sprite-walker { animation: strike-lunge 190ms ease-out; }
+    .combat-sprite.enemy .sprite-walker { animation-duration: 390ms; }
+    .portrait {
+      position: relative;
+      display: block;
+      width: clamp(23px, 4vw, 42px);
+      aspect-ratio: 1;
+      flex: 0 0 auto;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--role-color, var(--acid)) 72%, transparent);
+      background: #18211d;
+      box-shadow: inset 0 0 12px #0008;
+    }
+    .portrait svg { display: block; width: 100%; height: 100%; }
+    .portrait .portrait-art { position: absolute; z-index: 2; inset: 0; display: none; width: 100%; height: 100%; object-fit: contain; }
+    .portrait.art-loading > svg, .portrait.art-loading > .portrait-mark, .battle-figure.art-loading > svg { opacity: 0; }
+    .portrait.has-shop-art .portrait-art { display: block; }
+    .portrait.has-shop-art > svg, .portrait.has-shop-art .portrait-mark { opacity: 0; }
+    .portrait.art-missing { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #18211d 0 6px, #202a23 6px 12px); }
+    .portrait.art-missing::after { content: "ART"; color: var(--muted); font: 8px "Courier New", monospace; }
+    .portrait.art-missing > svg, .portrait.art-missing > .portrait-mark { display: none; }
+    .battle-figure.art-missing { background: repeating-linear-gradient(135deg, #18211d 0 8px, #202a23 8px 16px); }
+    .battle-figure.art-missing::after { content: "ART"; position: absolute; inset: 45% 0 auto; color: var(--muted); font: 9px "Courier New", monospace; text-align: center; }
+    .battle-figure.art-missing > svg { display: none; }
+    .portrait-mark { position: absolute; right: 2px; bottom: 1px; color: #fff; font: 700 7px "Courier New", monospace; text-shadow: 0 1px 3px #000; }
+    .hostile-portrait { border-color: #ef7c62; background: #362522; }
+    .unit-name { max-width: 100%; overflow: hidden; color: var(--ink); font-size: clamp(8px, .75vw, 10px); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .unit-role { max-width: 100%; overflow: hidden; color: var(--muted); font: 8px "Courier New", monospace; text-overflow: ellipsis; white-space: nowrap; }
+    .health-track { position: absolute; right: 4px; bottom: 3px; left: 4px; height: 3px; background: #070a08; }
+    .health-fill { display: block; width: 100%; height: 100%; background: var(--acid); transition: width 100ms linear; }
+    .enemy .health-fill { background: var(--red); }
+    .board-flash { position: absolute; z-index: 3; width: 12px; height: 12px; border-radius: 50%; background: var(--acid); box-shadow: 0 0 18px 7px #d7ed6270; pointer-events: none; animation: pop 260ms ease-out forwards; }
+
+    .bench-area { padding: 14px 0 17px; border-bottom: 1px solid var(--line); }
+    .bench-header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+    .bench-header h2 { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
+    .bench-caption { color: var(--muted); font-size: 10px; }
+    .bench { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 7px; }
+    .bench-slot {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 72px;
+      place-items: center;
+      padding: 5px 2px;
+      border: 1px dashed #73806c66;
+      background: #ffffff04;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .bench-slot.occupied { border-style: solid; border-color: var(--role-color); background: #222b25; }
+    .bench-slot.selected { outline: 2px solid var(--acid); outline-offset: 1px; }
+    .bench-slot .portrait { width: 28px; }
+    .bench-slot .unit-name { font-size: 9px; }
+    .bench-slot .unit-role { font-size: 7px; }
+    .bench-slot .rank { position: absolute; top: 3px; right: 4px; color: var(--acid); font: 9px "Courier New", monospace; }
+    .bench-count { color: var(--ink); }
+
+    .shop-area { padding-top: 14px; }
+    .shop-heading { margin-bottom: 9px; }
+    .shop-heading-copy { display: grid; gap: 4px; }
+    .shop-odds { color: var(--acid) !important; }
+    .shop-controls { display: flex; align-items: center; gap: 7px; }
+    .button {
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      background: #263029;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+    }
+    .button:hover:not(:disabled) { border-color: var(--acid); background: #35402d; transform: translateY(-1px); }
+    .button:disabled { opacity: .42; cursor: not-allowed; }
+    .button.primary { border-color: var(--acid); background: var(--acid); color: #1b2117; }
+    .button.primary:hover:not(:disabled) { background: #e6fb80; }
+    .button.danger { color: #f4977f; }
+    .button.compact { min-height: 29px; padding: 0 8px; }
+
+    .shop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+    .shop-card {
+      display: flex;
+      min-width: 0;
+      min-height: 128px;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--role-color, var(--line));
+      background: #202923;
+      text-align: left;
+      cursor: pointer;
+      transition: background 130ms ease, border-color 130ms ease;
+    }
+    .shop-card:hover:not(:disabled) { border-color: var(--role-color, var(--acid)); background: #2b352d; }
+    .shop-card:disabled { opacity: .42; cursor: not-allowed; }
+    .shop-card.shop-empty { align-items: center; justify-content: center; border-style: dashed; border-top-width: 1px; background: #ffffff03; color: var(--muted); cursor: default; }
+    .shop-empty-label { font: 10px "Courier New", monospace; text-transform: uppercase; }
+    .shop-top { display: flex; width: 100%; align-items: flex-start; justify-content: space-between; gap: 4px; }
+    .shop-card .portrait { width: 34px; }
+    .tier-badge { padding: 3px 5px; border: 1px solid var(--acid); color: var(--acid); font: 9px "Courier New", monospace; text-transform: uppercase; }
+    .shop-name { margin-top: 7px; font-size: 12px; font-weight: 700; line-height: 1.1; }
+    .shop-meta { margin-top: 3px; color: var(--muted); font: 9px "Courier New", monospace; }
+    .shop-base-stats { margin-top: 5px; color: #c4cbb9; font: 8px "Courier New", monospace; line-height: 1.45; }
+    .shop-cost { align-self: flex-end; color: var(--acid); font-size: 11px; font-weight: 700; }
+
+    .intel { min-width: 0; border-left: 1px solid var(--line); padding-left: 18px; }
+    .intel-section { padding: 0 0 16px; margin-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .intel-section:last-child { border-bottom: 0; }
+    .intel-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
+    .squad-count { color: var(--acid); }
+    .trait-list { display: grid; gap: 6px; }
+    .trait {
+      display: grid;
+      grid-template-columns: 25px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 5px 7px;
+      border-left: 2px solid #64705e;
+      background: #ffffff05;
+      opacity: .55;
+    }
+    .trait.active { border-left-color: var(--acid); background: #d7ed620d; opacity: 1; }
+    .trait-sigil { color: var(--acid); font: 700 11px "Courier New", monospace; text-align: center; }
+    .trait-name { font-size: 11px; font-weight: 700; }
+    .trait-effect { margin-top: 2px; color: var(--muted); font-size: 9px; }
+    .trait-count { color: var(--muted); font: 10px "Courier New", monospace; }
+    .trait.active .trait-count { color: var(--acid); }
+    .empty-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+    .selected-info { min-height: 92px; }
+    .selected-top { display: flex; align-items: center; gap: 10px; }
+    .selected-top .portrait { width: 44px; }
+    .selected-name { margin: 0; font-size: 15px; }
+    .selected-sub { margin: 3px 0 0; color: var(--muted); font: 10px "Courier New", monospace; }
+    .selected-lore { margin: 8px 0 0; color: var(--muted); font: 9px "Courier New", monospace; line-height: 1.5; }
+    .selected-lore strong { color: var(--ink); font-weight: 400; }
+    .selected-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; margin-top: 11px; color: var(--muted); font: 10px "Courier New", monospace; }
+    .selected-stats strong { color: var(--ink); }
+    .selected-actions { display: flex; gap: 7px; margin-top: 10px; }
+    .report { min-height: 46px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .report strong { color: var(--ink); }
+    .round-progress { height: 3px; margin-top: 10px; background: #4a5449; }
+    .round-progress span { display: block; width: 0; height: 100%; background: var(--acid); transition: width 250ms ease; }
+
+    .bottom-note { display: flex; justify-content: space-between; gap: 12px; margin-top: 15px; color: var(--muted); font: 9px "Courier New", monospace; }
+    .bottom-note strong { color: var(--ink); font-weight: 400; }
+
+    @keyframes enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes hit { 50% { filter: brightness(2.2); } }
+    @keyframes pop { from { opacity: .9; transform: scale(.5); } to { opacity: 0; transform: scale(2.5); } }
+    @keyframes walk-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+    @keyframes step-a { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(-12deg); } }
+    @keyframes step-b { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
+    @keyframes arm-a { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+    @keyframes arm-b { 0%, 100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }
+    @keyframes weapon-swing { 0% { transform: rotate(0); } 45% { transform: rotate(-36deg); } 100% { transform: rotate(8deg); } }
+    @keyframes strike-lunge { 0%, 100% { transform: translateY(0); } 45% { transform: translate(4px, -2px); } }
+
+    @media (max-width: 980px) {
+      .workbench { grid-template-columns: minmax(0, 1fr) 235px; gap: 15px; }
+      .intel { padding-left: 14px; }
+      .shop-card { min-height: 118px; padding: 7px; }
+    }
+    @media (max-width: 760px) {
+      body { padding: 13px 12px 22px; }
+      .workbench { grid-template-columns: 1fr; }
+      .intel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; border-top: 1px solid var(--line); border-left: 0; padding: 15px 0 0; }
+      .intel-section { margin: 0; }
+      .intel-section:last-child { border-bottom: 1px solid var(--line); }
+      .battlefield { min-height: 330px; }
+      .title-note { max-width: 240px; }
+    }
+    @media (max-width: 520px) {
+      .topbar { align-items: flex-start; }
+      .brand-mark { width: 34px; }
+      .brand-copy strong { font-size: 10px; }
+      .resources { gap: 2px; }
+      .resource { min-width: 58px; gap: 4px; padding: 5px; }
+      .resource-icon { width: 18px; }
+      .resource-value { font-size: 14px; }
+      .resource-label { font-size: 8px; }
+      .title-row { align-items: flex-start; }
+      .title-note { max-width: 130px; font-size: 10px; }
+      .battlefield { min-height: 300px; aspect-ratio: 1.08; }
+      .unit-chip { width: calc(100% / 7 - 4px); height: calc(25% - 6px); gap: 2px; }
+      .unit-chip.combat-sprite { width: 36px; height: 70px; }
+      .unit-role { display: none; }
+      .unit-name { font-size: 8px; }
+      .zone-label { font-size: 8px; }
+      .bench { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .bench-slot { min-height: 58px; }
+      .shop { grid-template-columns: repeat(5, minmax(98px, 1fr)); overflow-x: auto; padding-bottom: 5px; }
+      .shop-card { min-height: 112px; }
+      .shop-heading { align-items: flex-start; flex-wrap: wrap; }
+      .shop-controls { width: 100%; justify-content: flex-end; }
+      .intel { grid-template-columns: 1fr; }
+      .bottom-note { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">RI</div>
+        <div class="brand-copy"><strong>RHODES ISLAND</strong><span>Operator deployment interface</span></div>
+      </div>
+      <div class="resources" aria-label="Πόροι αποστολής">
+        <div class="resource"><span class="resource-icon" aria-hidden="true">◈</span><span><span class="resource-label">LMD</span><strong class="resource-value" id="gold">10</strong></span></div>
+        <div class="resource health"><span class="resource-icon" aria-hidden="true">♥</span><span><span class="resource-label">Integrity</span><strong class="resource-value" id="integrity">100</strong></span></div>
+      </div>
+    </header>
+
+    <div class="title-row">
+      <div><p class="overline">Tactical simulation · Rhodes Island</p><h1>Πεδίο ανάπτυξης</h1></div>
+      <p class="title-note">Στήσε την ομάδα σου. Οι operators αναλαμβάνουν τη μάχη.</p>
+    </div>
+
+    <div class="workbench">
+      <section class="main-column" aria-label="Πεδίο μάχης και κατάστημα">
+        <div class="section-heading"><h2>Πεδίο μάχης <span class="stage" id="round">Γύρος 1</span></h2><small id="phase-label">ΦΑΣΗ ΠΡΟΕΤΟΙΜΑΣΙΑΣ</small></div>
+        <div class="battlefield" id="battlefield" aria-label="Τακτικό πλέγμα">
+          <div class="tile-grid" id="tile-grid"></div>
+          <span class="zone-label enemy">ΕΧΘΡΙΚΗ ΖΩΝΗ</span><span class="zone-label home">ΖΩΝΗ ΑΝΑΠΤΥΞΗΣ</span>
+          <div class="midline"></div>
+          <div class="token-layer" id="token-layer"></div>
+        </div>
+
+        <section class="bench-area" aria-label="Εφεδρεία operators">
+          <div class="bench-header"><h2>Εφεδρεία</h2><span class="bench-caption"><span class="bench-count" id="bench-count">0</span> / 8 θέσεις · ενεργοί <span id="field-count">0</span> / <span id="unit-cap">3</span></span></div>
+          <div class="bench" id="bench"></div>
+        </section>
+
+        <section class="shop-area" aria-label="Κατάστημα operators">
+          <div class="section-heading shop-heading">
+            <div class="shop-heading-copy"><h2>Διαθέσιμοι operators</h2><small id="shop-odds"></small><small>Ξεκλείδωμα: Tier 1 Lv.1 · Tier 2 Lv.3 · Tier 3 Lv.5 · Tier 4 Lv.7</small></div>
+            <div class="shop-controls">
+              <button class="button compact" id="reroll">Ανανέωση · 2 LMD</button>
+              <button class="button compact" id="buy-xp">Εκπαίδευση · 4 LMD</button>
+              <button class="button primary" id="fight">Έναρξη μάχης</button>
+            </div>
+          </div>
+          <div class="shop" id="shop"></div>
+        </section>
+      </section>
+
+      <aside class="intel" aria-label="Τακτικές πληροφορίες">
+        <section class="intel-section">
+          <h2 class="intel-title">Συνέργειες <span class="squad-count" id="synergy-count">0</span></h2>
+          <div class="trait-list" id="traits"></div>
+        </section>
+        <section class="intel-section">
+          <h2 class="intel-title">Operator</h2>
+          <div class="selected-info" id="selected-info"><p class="empty-note">Επίλεξε operator από την εφεδρεία ή το πεδίο.</p></div>
+        </section>
+        <section class="intel-section">
+          <h2 class="intel-title">Αναφορά αποστολής <span class="stage" id="level">LV. 3</span></h2>
+          <p class="report" id="report">Αγόρασε operators, τοποθέτησέ τους στη ζώνη ανάπτυξης και ξεκίνα τη μάχη.</p>
+          <div class="round-progress"><span id="xp-progress"></span></div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="bottom-note"><span><strong>Έλεγχος:</strong> επίλεξε operator και μετά κενό κελί για ανάπτυξη ή μετακίνηση.</span><span>Max Elite + Trust · δεδομένα: <a href="https://github.com/Kengxxiao/ArknightsGameData" target="_blank" rel="noreferrer">ArknightsGameData</a></span></footer>
+  </main>
+
+  <script src="operators-data.js"></script>
+  <script>
+    (() => {
+      const starterDefinitions = [
+        { id: "amiya", name: "Amiya", initials: "AM", role: "Caster", faction: "Rhodes Island", cost: 2, rarity: 5, elite: 2, level: 80, dpCost: 20, hp: 1680, attack: 682, defense: 121, resistance: 20, interval: 1.6, damageType: "arts", moveSpeed: 1, range: 2.5, color: "var(--caster)" },
+        { id: "exusiai", name: "Exusiai", initials: "EX", role: "Sniper", faction: "Laterano", cost: 2, rarity: 6, elite: 2, level: 90, dpCost: 14, hp: 1673, attack: 630, defense: 161, resistance: 0, interval: 1.0, damageType: "physical", moveSpeed: 1, range: 3.1, color: "var(--sniper)" },
+        { id: "silverash", name: "SilverAsh", initials: "SA", role: "Guard", faction: "Kjerag", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 20, hp: 2560, attack: 763, defense: 447, resistance: 10, interval: 1.3, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--guard)" },
+        { id: "nearl", name: "Nearl", initials: "NE", role: "Defender", faction: "Kazimierz", cost: 2, rarity: 5, elite: 2, level: 80, dpCost: 21, hp: 2780, attack: 502, defense: 625, resistance: 10, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--defender)" },
+        { id: "lappland", name: "Lappland", initials: "LA", role: "Guard", faction: "Siracusa", cost: 2, rarity: 5, elite: 2, level: 80, dpCost: 19, hp: 2350, attack: 760, defense: 365, resistance: 15, interval: 1.3, damageType: "physical", moveSpeed: 1, range: 1.2, color: "var(--guard)" },
+        { id: "eyja", name: "Eyjafjalla", initials: "EY", role: "Caster", faction: "Rhodes Island", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 21, hp: 1743, attack: 735, defense: 122, resistance: 20, interval: 1.6, damageType: "arts", moveSpeed: 1, range: 2.7, color: "var(--caster)" },
+        { id: "texas", name: "Texas", initials: "TX", role: "Vanguard", faction: "Penguin Logistics", cost: 2, rarity: 5, elite: 2, level: 80, dpCost: 13, hp: 1950, attack: 570, defense: 343, resistance: 0, interval: 1.05, damageType: "physical", moveSpeed: 1, range: 1.2, color: "var(--vanguard)" },
+        { id: "kroos", name: "Kroos", initials: "KR", role: "Sniper", faction: "Rhodes Island", cost: 1, rarity: 3, elite: 1, level: 55, dpCost: 11, hp: 1060, attack: 425, defense: 126, resistance: 0, interval: 1.0, damageType: "physical", moveSpeed: 1, range: 3.0, color: "var(--sniper)" },
+        { id: "hoshi", name: "Hoshiguma", initials: "HO", role: "Defender", faction: "Lungmen", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 23, hp: 3850, attack: 490, defense: 783, resistance: 0, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.1, color: "var(--defender)" },
+        { id: "myrtle", name: "Myrtle", initials: "MY", role: "Vanguard", faction: "Kazimierz", cost: 1, rarity: 4, elite: 2, level: 70, dpCost: 10, hp: 1565, attack: 520, defense: 350, resistance: 0, interval: 1.3, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--vanguard)" },
+        { id: "saria", name: "Saria", initials: "SR", role: "Defender", faction: "Rhodes Island", cost: 2, rarity: 6, elite: 2, level: 90, dpCost: 22, hp: 3150, attack: 535, defense: 655, resistance: 10, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--defender)" },
+        { id: "blaze", name: "Blaze", initials: "BZ", role: "Guard", faction: "Rhodes Island", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 24, hp: 2821, attack: 825, defense: 415, resistance: 0, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.2, color: "var(--guard)" }
+      ];
+      const allowedOperatorCategories = new Set([
+        "yan", "sargon", "laterano", "liberi", "sarkaz", "aegir", "egir",
+        "kazimierz", "siracusa", "kjerag", "victoria"
+      ]);
+      const definitions = (window.operatorData?.length ? window.operatorData : starterDefinitions).filter(definition =>
+        [definition.race, definition.faction].some(value => value && allowedOperatorCategories.has(value.toLowerCase()))
+      );
+      const operatorLooks = {
+        amiya: { hair: "#775845", accent: "#d8cbb1", coat: "#52627a", inner: "#d6d3c4", trim: "#d7bf71", pants: "#343b48", feature: "ears" },
+        exusiai: { hair: "#c35c4c", accent: "#e5bf74", coat: "#9b5547", inner: "#e6dfc9", trim: "#e7bd64", pants: "#384047", feature: "halo" },
+        silverash: { hair: "#d4d7cf", accent: "#8ea6a6", coat: "#d2d7cf", inner: "#607a7d", trim: "#d3bd85", pants: "#434e51", feature: "collar" },
+        nearl: { hair: "#d0ad62", accent: "#e6d9af", coat: "#b7954e", inner: "#e4d8b7", trim: "#f0d989", pants: "#6d624c", feature: "crest" },
+        lappland: { hair: "#c8d0cf", accent: "#727f87", coat: "#68747b", inner: "#bcc5c4", trim: "#d7ddd4", pants: "#3e4749", feature: "wolf" },
+        eyja: { hair: "#6e5043", accent: "#dc94ac", coat: "#795a56", inner: "#eadbc7", trim: "#cf9aab", pants: "#514445", feature: "horns" },
+        texas: { hair: "#626970", accent: "#c8cbd0", coat: "#46515b", inner: "#bfc4c1", trim: "#d4d0c0", pants: "#30373f", feature: "wolf" },
+        kroos: { hair: "#5b493d", accent: "#8abf82", coat: "#68714d", inner: "#d2c8a9", trim: "#9cc17d", pants: "#464d3d", feature: "ears" },
+        hoshi: { hair: "#ded6c9", accent: "#d45c59", coat: "#873e3b", inner: "#d4cbb9", trim: "#e6b968", pants: "#393737", feature: "horns" },
+        myrtle: { hair: "#d7b86d", accent: "#94c98d", coat: "#748550", inner: "#e6d8b4", trim: "#a8c976", pants: "#4e5941", feature: "leaves" },
+        saria: { hair: "#cdd4ce", accent: "#83b5a3", coat: "#c2cbc7", inner: "#566d70", trim: "#8fc2b0", pants: "#465354", feature: "collar" },
+        blaze: { hair: "#a84b40", accent: "#e1a34f", coat: "#a6533d", inner: "#38413e", trim: "#e6a650", pants: "#343a36", feature: "cat" }
+      };
+      const signatureWeapons = {
+        silverash: `<path class="sprite-weapon" d="m45 54 4-4 12-36 4 2-9 40-5 5z" fill="#dce4e0" stroke="#6e8588" stroke-width="1.5"/><path d="m47 53 8 4" stroke="#9bb5b3" stroke-width="4"/>`,
+        nearl: `<path class="sprite-weapon" d="m46 42 13-5 5 7-3 23-13 3-6-9z" fill="#c4a765" stroke="#f0dda0" stroke-width="2"/><path d="m49 48 10-3-2 14-7 2z" fill="#e6d7b5"/><path d="M50 54h8" stroke="#967440" stroke-width="2"/>`,
+        lappland: `<path class="sprite-weapon" d="m45 52 3-2 13-28 2 2-11 31-4 3z" fill="#d5dedc" stroke="#79898b" stroke-width="1"/><path d="m17 55-2-2-8-20 3-1 12 19-1 4z" fill="#d5dedc" stroke="#79898b" stroke-width="1"/>`,
+        texas: `<path class="sprite-weapon" d="m46 54 3-2 10-22 2 2-8 25-4 3z" fill="#cfd5d4" stroke="#7c8787" stroke-width="1.5"/><path d="m15 59-2-2-8-16 3-1 11 15-1 4z" fill="#cfd5d4" stroke="#7c8787" stroke-width="1.5"/>`,
+        kroos: `<path class="sprite-weapon" d="m44 44 17-3v4l-17 4-4-2z" fill="#625c45" stroke="#b4c27e" stroke-width="1.5"/><path d="m54 42 1 8m5-9-1 8" stroke="#d7d0ac" stroke-width="1.5"/>`,
+        hoshi: `<path class="sprite-weapon" d="m45 42 14-4 5 8-3 24-14 2-6-10z" fill="#a84943" stroke="#e1b976" stroke-width="2"/><path d="m49 49 9-3-2 15-7 1z" fill="#d2c6ad"/><path d="m51 54 6-1" stroke="#a84943" stroke-width="2"/>`,
+        myrtle: `<path class="sprite-weapon" d="M53 59 59 17" stroke="#a47e50" stroke-width="2.5"/><path d="m57 19 5-10 2 11-5 5z" fill="#9cc976" stroke="#e3d8ad" stroke-width="1"/><path d="m58 17-7-6 2 10 5 3z" fill="#728f55"/>`,
+        saria: `<path class="sprite-weapon" d="m46 44 13-4 5 7-3 21-13 3-6-9z" fill="#789e9a" stroke="#d6e0d4" stroke-width="2"/><path d="m50 50 9-3-2 14-7 1z" fill="#d2ddd1"/><path d="M50 55h7" stroke="#82b8a8" stroke-width="2"/>`,
+        blaze: `<path class="sprite-weapon" d="m43 52 5-6 15-26 3 2-9 31-7 7z" fill="#b9bdb1" stroke="#e4a04a" stroke-width="2"/><path d="m53 28 8 4m-12 3 8 4m-12 3 8 4" stroke="#39413b" stroke-width="2"/><path d="m47 53 7 4" stroke="#e4a04a" stroke-width="4"/>`
+      };
+      const operatorAssets = Object.fromEntries(definitions.map(definition => {
+        const assetId = definition.id === "char_002_amiya" || definition.id === "amiya" ? "amiya" : definition.id;
+        return [definition.id, {
+          walk: `assets/operators/${assetId}/${assetId}-walk.png`,
+          shop: `assets/operators/${assetId}/${assetId}-shop.png`,
+          attack: `assets/operators/${assetId}/${assetId}-attack.png`
+        }];
+      }));
+      operatorAssets["char_002_amiya"] = {
+        walk: "assets/operators/amiya/Pasted Image.png",
+        shop: "assets/operators/amiya/Pasted Image 2.png",
+        attack: "assets/operators/amiya/Pasted Image 3.png"
+      };
+      if (definitions.some(definition => definition.id === "amiya")) operatorAssets.amiya = operatorAssets.amiya || operatorAssets["char_002_amiya"];
+      const processedArt = new Map();
+      const byId = Object.fromEntries(definitions.map(definition => [definition.id, definition]));
+      const roleNames = { Guard: "Φρουρός", Defender: "Αμυντικός", Sniper: "Ελεύθερος σκοπευτής", Caster: "Caster", Vanguard: "Vanguard", Medic: "Θεραπευτής", Specialist: "Ειδικός", Supporter: "Υποστηρικτής" };
+      const roleSigils = { Guard: "G", Defender: "D", Sniper: "S", Caster: "C", Vanguard: "V", Medic: "M", Specialist: "X", Supporter: "U" };
+      const roleEffects = {
+        Guard: "2: +15% επίθεση · 4: +35%",
+        Defender: "2: +20% αντοχή · 4: +40%",
+        Sniper: "2: +1.0 εμβέλεια · 4: +1.5",
+        Caster: "2: +20% επίθεση · 4: +45%",
+        Vanguard: "2: +1 LMD στη νίκη",
+        Medic: "2: +15% αντοχή · 4: +30%",
+        Specialist: "2: +15% επίθεση · 4: +30%",
+        Supporter: "2: +1.0 εμβέλεια · 4: +1.5"
+      };
+      const roles = ["Guard", "Defender", "Sniper", "Caster", "Vanguard", "Medic", "Specialist", "Supporter"];
+      const raceBuffTypes = {
+        Yan: "attack",
+        Sargon: "health",
+        Laterano: "range",
+        Liberi: "range",
+        Sarkaz: "resistance",
+        Aegir: "resistance",
+        Kazimierz: "speed",
+        Siracusa: "attack",
+        Kjerag: "speed",
+        Victoria: "defense"
+      };
+      const synergyNames = {
+        yan: "Yan", sargon: "Sargon", laterano: "Laterano", liberi: "Liberi",
+        sarkaz: "Sarkaz", aegir: "Aegir", egir: "Aegir", kazimierz: "Kazimierz",
+        siracusa: "Siracusa", kjerag: "Kjerag", victoria: "Victoria"
+      };
+      const raceBuffEffects = {
+        attack: "2: +10% ATK · 3: +20% · 5: +25%",
+        health: "2: +12% HP · 3: +18% · 5: +25%",
+        defense: "2: +12% DEF · 3: +20% · 5: +30%",
+        resistance: "2: +5 RES · 3: +10 · 5: +15",
+        speed: "2: +10% ταχύτητα επίθεσης · 3: +18% · 5: +25%",
+        range: "2: +0.5 εμβέλεια · 3: +1.0 · 5: +1.5",
+        arts: "2: +10% ATK · +5 RES · 3: +18% · +10 RES · 5: +25% · +15 RES"
+      };
+      const maxBench = 8;
+      const gridWidth = 7;
+      const gridHeight = 4;
+
+      const elements = {
+        battlefield: document.querySelector("#battlefield"),
+        tileGrid: document.querySelector("#tile-grid"),
+        tokenLayer: document.querySelector("#token-layer"),
+        bench: document.querySelector("#bench"),
+        shop: document.querySelector("#shop"),
+        gold: document.querySelector("#gold"),
+        integrity: document.querySelector("#integrity"),
+        round: document.querySelector("#round"),
+        phase: document.querySelector("#phase-label"),
+        benchCount: document.querySelector("#bench-count"),
+        fieldCount: document.querySelector("#field-count"),
+        unitCap: document.querySelector("#unit-cap"),
+        traits: document.querySelector("#traits"),
+        synergyCount: document.querySelector("#synergy-count"),
+        shopOdds: document.querySelector("#shop-odds"),
+        selectedInfo: document.querySelector("#selected-info"),
+        level: document.querySelector("#level"),
+        report: document.querySelector("#report"),
+        xpProgress: document.querySelector("#xp-progress"),
+        reroll: document.querySelector("#reroll"),
+        buyXp: document.querySelector("#buy-xp"),
+        fight: document.querySelector("#fight")
+      };
+
+      const game = {
+        gold: 10,
+        integrity: 100,
+        round: 1,
+        level: 3,
+        xp: 0,
+        phase: "prep",
+        shop: [],
+        allies: [],
+        enemies: [],
+        selected: null,
+        nextId: 1,
+        frameTime: 0,
+        battleTime: 0,
+        vanguardBonus: 0,
+        nodeById: new Map()
+      };
+
+      const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
+      const definitionOf = unit => unit.definition || byId[unit.type];
+      const synergiesOf = definition => [...new Set([definition.race, definition.faction]
+        .filter(Boolean)
+        .map(value => synergyNames[value.toLowerCase()])
+        .filter(Boolean))];
+      const roleColor = unit => definitionOf(unit).color;
+      const alive = unit => unit.hp > 0;
+      const fielded = () => game.allies.filter(unit => unit.location === "board");
+      const benched = () => game.allies.filter(unit => unit.location === "bench");
+      const xpTarget = () => game.level * 2;
+      const unitCap = () => game.level;
+      const operatorTier = definition => definition.rarity <= 2 ? 1 : definition.rarity <= 4 ? 2 : definition.rarity === 5 ? 3 : 4;
+      const unlockedOperatorTier = level => level >= 7 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
+      const shopTierOdds = {
+        1: [100, 0, 0, 0],
+        2: [100, 0, 0, 0],
+        3: [75, 25, 0, 0],
+        4: [55, 30, 15, 0],
+        5: [45, 33, 20, 2],
+        6: [30, 40, 25, 5],
+        7: [19, 30, 40, 11]
+      };
+
+      function makeUnit(type, location, slot = 0, rank = 1) {
+        return { uid: String(game.nextId++), type, location, slot, x: 0, y: 0, rank, hp: 0, maxHp: 0, dead: false };
+      }
+
+      function availableShopTiers() {
+        const maxCost = Math.min(3, 1 + Math.floor((game.round - 1) / 3));
+        return definitions.reduce((tiers, definition) => {
+          const tier = operatorTier(definition);
+          if (definition.cost <= maxCost) {
+            (tiers[tier] ||= []).push(definition);
+          }
+          return tiers;
+        }, {});
+      }
+
+      function effectiveShopOdds() {
+        const available = availableShopTiers();
+        const odds = shopTierOdds[game.level];
+        const availableTiers = Object.keys(available).map(tier => ({
+          tier: Number(tier),
+          weight: odds[tier - 1],
+          definitions: available[tier]
+        }));
+        const total = availableTiers.reduce((sum, tier) => sum + tier.weight, 0);
+        const weightedTiers = total
+          ? availableTiers.filter(tier => tier.weight > 0)
+          : availableTiers.map(tier => ({ ...tier, weight: 1 }));
+        const effectiveTotal = weightedTiers.reduce((sum, tier) => sum + tier.weight, 0);
+        if (!effectiveTotal) throw new Error(`No operators available for level ${game.level} and round ${game.round}.`);
+        return weightedTiers.map(tier => ({ ...tier, chance: tier.weight / effectiveTotal }));
+      }
+
+      function randomShopType() {
+        const tiers = effectiveShopOdds();
+        let roll = Math.random() * tiers.reduce((total, tier) => total + tier.weight, 0);
+        for (const tier of tiers) {
+          roll -= tier.weight;
+          if (roll < 0) return tier.definitions[Math.floor(Math.random() * tier.definitions.length)].id;
+        }
+        throw new Error(`Unable to select an operator for level ${game.level} and round ${game.round}.`);
+      }
+
+      function rollShop() {
+        game.shop = Array.from({ length: 5 }, randomShopType);
+      }
+
+      function activeCounts() {
+        const roleCounts = Object.fromEntries(roles.map(role => [role, 0]));
+        const synergyCounts = {};
+        for (const unit of fielded()) {
+          const definition = definitionOf(unit);
+          roleCounts[definition.role]++;
+          for (const synergy of synergiesOf(definition)) synergyCounts[synergy] = (synergyCounts[synergy] || 0) + 1;
+        }
+        return { roleCounts, synergyCounts };
+      }
+
+      function roleBonus(definition, roleCounts) {
+        const count = roleCounts[definition.role] || 0;
+        if (count < 2) return {};
+        if (definition.role === "Guard") return { attack: count >= 4 ? 1.35 : 1.15 };
+        if (definition.role === "Defender") return { hp: count >= 4 ? 1.4 : 1.2 };
+        if (definition.role === "Sniper") return { range: count >= 4 ? 4.5 : 4.0 };
+        if (definition.role === "Caster") return { attack: count >= 4 ? 1.45 : 1.2 };
+        if (definition.role === "Medic") return { hp: count >= 4 ? 1.3 : 1.15 };
+        if (definition.role === "Specialist") return { attack: count >= 4 ? 1.3 : 1.15 };
+        if (definition.role === "Supporter") return { range: count >= 4 ? 4.0 : 3.0 };
+        return {};
+      }
+
+      function raceBonus(synergy, count) {
+        const type = raceBuffTypes[synergy];
+        if (!type || count < 2) return {};
+        const tier = count >= 5 ? 5 : count >= 3 ? 3 : 2;
+        if (type === "attack") return { attack: tier === 5 ? 1.25 : tier === 3 ? 1.2 : 1.1 };
+        if (type === "health") return { hp: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.12 };
+        if (type === "defense") return { defense: tier === 5 ? 1.3 : tier === 3 ? 1.2 : 1.12 };
+        if (type === "resistance") return { resistance: tier === 5 ? 15 : tier === 3 ? 10 : 5 };
+        if (type === "speed") return { rate: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.1 };
+        if (type === "range") return { range: tier === 5 ? 1.5 : tier === 3 ? 1 : .5 };
+        return { attack: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.1, resistance: tier === 5 ? 15 : tier === 3 ? 10 : 5 };
+      }
+
+      function effectiveStats(unit, isEnemy = false) {
+        const definition = definitionOf(unit);
+        const rankScale = 1 + (unit.rank - 1) * .65;
+        let hpMultiplier = 1;
+        let attackMultiplier = 1;
+        let range = definition.range;
+        let defenseMultiplier = 1;
+        let resistanceBonus = 0;
+        let rateMultiplier = 1;
+        if (!isEnemy) {
+          const { roleCounts, synergyCounts } = activeCounts();
+          const bonus = roleBonus(definition, roleCounts);
+          attackMultiplier *= bonus.attack || 1;
+          hpMultiplier *= bonus.hp || 1;
+          range = Math.max(range, bonus.range || range);
+          for (const synergy of synergiesOf(definition)) {
+            const synergyBonus = raceBonus(synergy, synergyCounts[synergy] || 0);
+            attackMultiplier *= synergyBonus.attack || 1;
+            hpMultiplier *= synergyBonus.hp || 1;
+            range += synergyBonus.range || 0;
+            defenseMultiplier *= synergyBonus.defense || 1;
+            resistanceBonus += synergyBonus.resistance || 0;
+            rateMultiplier *= synergyBonus.rate || 1;
+          }
+        }
+        const roundScale = isEnemy ? 1 + (game.round - 1) * .09 : 1;
+        unit.maxHp = definition.hp * rankScale * hpMultiplier * roundScale;
+        unit.attack = definition.attack * rankScale * attackMultiplier * roundScale;
+        unit.defense = definition.defense * rankScale * roundScale * defenseMultiplier;
+        unit.resistance = definition.resistance + resistanceBonus;
+        unit.damageType = definition.damageType;
+        unit.range = range;
+        unit.rate = (1 / definition.interval) * rateMultiplier;
+        unit.moveSpeed = definition.moveSpeed;
+        unit.hp = unit.maxHp;
+        unit.cooldown = Math.random() * .3;
+        unit.dead = false;
+      }
+
+      function renderTiles() {
+        elements.tileGrid.innerHTML = "";
+        for (let y = 0; y < gridHeight; y++) {
+          for (let x = 0; x < gridWidth; x++) {
+            const tile = document.createElement("button");
+            tile.type = "button";
+            tile.className = `tile ${y < 2 ? "enemy-zone" : "home-zone"}`;
+            tile.dataset.x = String(x);
+            tile.dataset.y = String(y);
+            tile.setAttribute("aria-label", `Κελί ${x + 1}, ${y + 1}`);
+            elements.tileGrid.append(tile);
+          }
+        }
+      }
+
+      function portraitMarkup(definition, enemy = false) {
+        if (enemy) {
+          const accent = { Guard: "#e88956", Defender: "#b4a77d", Sniper: "#e5c15f", Caster: "#bd8be0" }[definition.role] || "#e76d56";
+          const sigil = roleSigils[definition.role] || "!";
+          return `<span class="portrait hostile-portrait"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 48c1-10 7-14 15-16h10c9 2 14 7 15 16" fill="#302726"/><path d="M14 31 9 23c-2-4-1-10 2-14l7-5h12l8 6 1 11-5 10-6 7H18z" fill="#171b19" stroke="#82776b" stroke-width="1.5"/><path d="M8 17 10 8l9-6h12l9 7 1 8-7-4-5 2-6-3-7 4z" fill="#55564b"/><path d="M12 17h24l-3 7-7 3h-7l-6-4z" fill="#171c1b" stroke="${accent}" stroke-width="1.5"/><path d="M17 20h5m5 0h5" stroke="${accent}" stroke-width="2"/><path d="m18 29 6 3 6-3" fill="none" stroke="#8e7261" stroke-width="2"/><path d="M5 40h38" stroke="${accent}" stroke-width="3"/></svg><span class="portrait-mark">${sigil}</span></span>`;
+        }
+
+        const look = operatorLooks[definition.id] || { hair: "#81847c", accent: "#d7ed62", feature: "collar" };
+        const features = {
+          ears: `<path d="m12 13-7-9 12 4m19 5 7-9-12 4" fill="${look.hair}" stroke="${look.accent}" stroke-width="1.5"/>`,
+          halo: `<path d="M14 6c3-5 17-5 20 0" fill="none" stroke="${look.accent}" stroke-width="2.5"/>`,
+          collar: `<path d="m10 34 8-4 6 5 6-5 8 4-5 14H15z" fill="${look.accent}"/>`,
+          crest: `<path d="m20 6 4-5 4 5 6 3-4 5H18l-4-5z" fill="${look.accent}"/>`,
+          wolf: `<path d="m11 10-4-7 12 5m18 2 4-7-12 5" fill="${look.hair}" stroke="${look.accent}" stroke-width="1.5"/>`,
+          horns: `<path d="M13 13C7 8 9 2 5 1c0 8 2 13 8 16m22-4c6-5 4-11 8-12 0 8-2 13-8 16" fill="${look.accent}"/>`,
+          leaves: `<path d="M17 8C8 8 7 2 5 2c1 7 4 11 12 11m14-5c9 0 10-6 12-6-1 7-4 11-12 11" fill="${look.accent}"/>`,
+          cat: `<path d="m12 12-5-9 13 5m16 4 5-9-13 5" fill="${look.hair}" stroke="${look.accent}" stroke-width="1.5"/>`
+        }[look.feature];
+
+        return `<span class="portrait" style="--role-color:${definition.color}"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 48c1-10 7-14 15-16h8c8 2 14 7 15 16" fill="#29332d"/><path d="m16 32 8 5 8-5 5 4-5 12H16l-5-12z" fill="${look.accent}"/><path d="M20 27h8v8h-8z" fill="#c69472"/><ellipse cx="24" cy="19" rx="11" ry="13" fill="#d5ad8c"/><path d="M12 21 9 13l4-9 10-3 10 3 6 8-4 10-4-9-8 2-8-3z" fill="${look.hair}"/><path d="M18 20h3m6 0h3" stroke="#332c29" stroke-width="1.6" stroke-linecap="round"/><path d="M21 27c2 1 4 1 6 0" fill="none" stroke="#865e50" stroke-width="1.2" stroke-linecap="round"/>${features}<path d="M15 30 9 38l7 3m17-11 6 8-7 3" fill="none" stroke="#d5ad8c" stroke-width="2"/></svg><span class="portrait-mark">${escapeHtml(definition.initials)}</span></span>`;
+      }
+
+      function battleSpriteMarkup(definition, enemy = false) {
+        const look = enemy
+          ? { hair: "#353a36", accent: "#d97159", feature: "helmet", coat: "#555b53", inner: "#39443d", trim: "#d8d9c8", pants: "#303833" }
+          : operatorLooks[definition.id] || { hair: "#81847c", accent: "#d7ed62", coat: "#525a53", inner: "#39443d", trim: "#d8d9c8", pants: "#303833", feature: "collar" };
+        const roleWeapon = enemy
+          ? `<path class="sprite-weapon" d="M47 54 61 48l-2 4 3 3-14 4z" fill="#77796d" stroke="#2b302d" stroke-width="1.5"/><path d="M54 52 59 51" stroke="#e88a68" stroke-width="1.5"/>`
+          : {
+            Guard: `<path class="sprite-weapon" d="m45 51 3-2 14-27 2 2-12 30-3 4z" fill="#d9ded0" stroke="#5d675f" stroke-width="1"/><path d="m46 53 7 4" stroke="${look.accent}" stroke-width="3"/>`,
+            Defender: `<path class="sprite-weapon" d="m49 48 11-2 2 12-10 5-6-5z" fill="${look.accent}" stroke="#e9e9d8" stroke-width="1.5"/><path d="m52 51 6-1" stroke="#fff" stroke-width="1"/>`,
+            Sniper: `<path class="sprite-weapon" d="m42 45 19-4 1 3-18 6-4-1z" fill="#59635d" stroke="#d5d8c8" stroke-width="1.2"/><path d="m51 43 1-3h4" fill="none" stroke="#d7ed62" stroke-width="1.5"/>`,
+            Caster: `<path class="sprite-weapon" d="m48 54 11-35" stroke="#9b876e" stroke-width="3"/><circle cx="60" cy="17" r="5" fill="${look.accent}" stroke="#f3e7bd" stroke-width="1.5"/><path d="M54 17h12m-6-6v12" stroke="#fff5cf" stroke-width="1"/>`,
+            Vanguard: `<path class="sprite-weapon" d="m47 53 3-2 10-18 2 2-8 20-4 3z" fill="#dfe3d2" stroke="${look.accent}" stroke-width="2"/>`
+          }[definition.role] || "";
+        const weapon = enemy ? roleWeapon : signatureWeapons[definition.id] || roleWeapon;
+        const head = enemy
+          ? `<path d="m19 31 1-14 5-8h14l7 8-1 15-5 7H25z" fill="#747568" stroke="#272c29" stroke-width="1.5"/><path d="m17 20 2-9 8-6h13l9 8 1 8-8-4-7 2-8-3-7 5z" fill="#4c514a"/><path d="M22 20h20l-3 6H25z" fill="#202522" stroke="${look.accent}" stroke-width="1.5"/><path d="M27 22h4m4 0h4" stroke="${look.accent}" stroke-width="2"/>`
+          : `<path d="M25 34h10v9H25z" fill="#c69472"/><ellipse cx="30" cy="24" rx="12" ry="14" fill="#d5ad8c"/><path d="m18 27-3-9 4-11 11-4 10 4 7 9-3 13-4-12-9 2-8-4z" fill="${look.hair}"/><path d="M23 23h3m7 0h3" stroke="#332c29" stroke-width="1.7" stroke-linecap="round"/><path d="M28 31c2 1 4 1 6 0" fill="none" stroke="#865e50" stroke-width="1.2"/>${look.feature === "ears" || look.feature === "wolf" || look.feature === "cat" ? `<path d="m20 16-8-11 13 5m18 6 8-11-13 5" fill="${look.feature === "wolf" ? "#c8d0cf" : look.hair}" stroke="${look.accent}" stroke-width="1.5"/>` : look.feature === "horns" ? `<path d="M20 16 15 5l8 6m14 5 5-11-8 6" fill="${look.accent}"/>` : look.feature === "halo" ? `<path d="M20 7c5-6 15-6 20 0" fill="none" stroke="${look.accent}" stroke-width="2.5"/>` : look.feature === "crest" ? `<path d="m23 10 7-8 7 8-4 5h-7z" fill="${look.trim}"/>` : look.feature === "leaves" ? `<path d="M21 13c-8-1-9-7-10-10 7 2 11 5 11 11m9-1c8-1 9-7 10-10-7 2-11 5-11 11" fill="${look.trim}"/>` : look.feature === "collar" ? `<path d="m19 39 7 4 4-5 5 5 7-5-3 12H22z" fill="${look.trim}"/>` : ""}`;
+
+        return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="91" rx="15" ry="3" fill="#080c09" opacity=".55"/><g class="sprite-walker"><g class="sprite-leg-a"><path d="m24 63-2 15 2 9h8l1-8-2-15z" fill="${enemy ? "#303833" : look.pants}" stroke="#111713" stroke-width="1.5"/><path d="m23 83-5 5v3h15v-4l-3-4z" fill="#171c19"/></g><g class="sprite-leg-b"><path d="m34 63 3 14-1 10h8l2-9-4-17z" fill="${enemy ? "#48514a" : look.pants}" stroke="#111713" stroke-width="1.5"/><path d="m36 84-3 4v3h16v-4l-5-4z" fill="#171c19"/></g><path d="m22 41-8 8 3 20 10 4 5-7 7 7 10-5 1-19-9-8z" fill="${enemy ? "#555b53" : look.coat}" stroke="#1c231e" stroke-width="2"/><path d="m24 43 7 6 8-6 5 5-4 21H25l-5-21z" fill="${enemy ? "#39443d" : look.inner}"/><path d="m28 49 4 5 4-5 4 19H26z" fill="${enemy ? "#d8d9c8" : look.trim}" opacity=".9"/><path d="m19 47 7 4-3 14-7-4m24-14-6 4 3 14 7-4" fill="none" stroke="${enemy ? "#bd7060" : look.accent}" stroke-width="2"/><path d="M23 66h17" stroke="${enemy ? "#a34c43" : look.trim}" stroke-width="2"/><g class="sprite-arm-back"><path d="m17 48-7 12 4 9 7-3-3-7 6-6z" fill="#c69472" stroke="#252b26" stroke-width="1.5"/><path d="m11 59 4-2 4 4-4 7-5-2z" fill="${enemy ? "#343b35" : look.pants}"/></g>${weapon}<g class="sprite-arm-front"><path d="m43 48 8 7 1 10-7 3-4-9-7-5z" fill="#c69472" stroke="#252b26" stroke-width="1.5"/><path d="m45 58 7-2 3 6-5 7-6-3z" fill="${enemy ? "#353d36" : look.pants}"/></g>${head}<path d="M20 72 32 78l13-6" fill="none" stroke="${enemy ? "#f0e2ba" : look.trim}" stroke-width="1.5" opacity=".8"/></g></svg></span>`;
+      }
+
+      function chipMarkup(unit, enemy = false) {
+        const definition = definitionOf(unit);
+        const role = escapeHtml(definition.role);
+        const selected = game.selected === unit.uid ? " selected" : "";
+        const combat = game.phase === "battle";
+        const preview = enemy && game.phase === "prep";
+        const fullBody = combat || preview;
+        const sprite = fullBody ? battleSpriteMarkup(definition, enemy) : portraitMarkup(definition, enemy);
+        const rank = unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : "";
+        const health = unit.maxHp ? Math.max(0, unit.hp / unit.maxHp * 100) : 100;
+        const top = preview ? (unit.y + .9) / gridHeight * 100 : (unit.y + .5) / gridHeight * 100;
+        return `<div class="unit-chip${enemy ? " enemy" : ""}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
+      }
+
+      function removeFlatBackground(image) {
+        const canvas = document.createElement("canvas");
+        const width = image.naturalWidth;
+        const height = image.naturalHeight;
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        context.drawImage(image, 0, 0);
+        const frame = context.getImageData(0, 0, width, height);
+        const pixels = frame.data;
+        const background = [pixels[0], pixels[1], pixels[2]];
+        const threshold = background.every(channel => channel > 240) ? 58 : 44;
+        const thresholdSquared = threshold * threshold;
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        let queueLength = 0;
+        const enqueue = index => {
+          if (visited[index]) return;
+          visited[index] = 1;
+          queue[queueLength++] = index;
+        };
+
+        for (let x = 0; x < width; x++) {
+          enqueue(x);
+          enqueue((height - 1) * width + x);
+        }
+        for (let y = 0; y < height; y++) {
+          enqueue(y * width);
+          enqueue(y * width + width - 1);
+        }
+
+        for (let cursor = 0; cursor < queueLength; cursor++) {
+          const index = queue[cursor];
+          const offset = index * 4;
+          const red = pixels[offset] - background[0];
+          const green = pixels[offset + 1] - background[1];
+          const blue = pixels[offset + 2] - background[2];
+          if (red * red + green * green + blue * blue > thresholdSquared) continue;
+          pixels[offset + 3] = 0;
+          const x = index % width;
+          const y = Math.floor(index / width);
+          if (x > 0) enqueue(index - 1);
+          if (x + 1 < width) enqueue(index + 1);
+          if (y > 0) enqueue(index - width);
+          if (y + 1 < height) enqueue(index + width);
+        }
+
+        context.putImageData(frame, 0, 0);
+        return canvas.toDataURL("image/png");
+      }
+
+      function attachArt(target, source, className, loadedClass) {
+        if (!target || !source) return;
+        target.classList.add("art-loading");
+        const image = new Image();
+        image.className = className;
+        image.alt = "";
+        image.onerror = () => {
+          image.remove();
+          target.classList.remove("art-loading");
+          target.classList.add("art-missing");
+        };
+        if (!processedArt.has(source)) {
+          processedArt.set(source, new Promise((resolve, reject) => {
+            const original = new Image();
+            original.onload = () => {
+              try {
+                resolve(removeFlatBackground(original));
+              } catch (error) {
+                reject(error);
+              }
+            };
+            original.onerror = () => reject(new Error(`Unable to load ${source}`));
+            original.src = source;
+          }));
+        }
+        processedArt.get(source).then(processedSource => {
+          if (!target.isConnected) return;
+          image.onload = () => {
+            target.classList.remove("art-loading");
+            target.classList.remove("art-missing");
+            target.classList.add(loadedClass);
+          };
+          image.src = processedSource;
+          target.append(image);
+        }).catch(() => {
+          target.classList.remove("art-loading");
+          target.classList.add("art-missing");
+        });
+      }
+
+      function renderBoardTokens() {
+        elements.tokenLayer.innerHTML = "";
+        game.nodeById.clear();
+        for (const unit of [...fielded(), ...game.enemies]) {
+          const enemy = unit.team === "enemy";
+          elements.tokenLayer.insertAdjacentHTML("beforeend", chipMarkup(unit, enemy));
+          const node = elements.tokenLayer.lastElementChild;
+          game.nodeById.set(unit.uid, node);
+          const assets = enemy ? null : operatorAssets[definitionOf(unit).id];
+          if (assets && game.phase === "battle") {
+            const figure = node.querySelector(".battle-figure");
+            attachArt(figure, assets.walk, "battle-art walk-frame", "has-walk-art");
+            attachArt(figure, assets.attack, "battle-art attack-frame", "has-attack-art");
+          } else if (assets) {
+            attachArt(node.querySelector(".portrait"), assets.shop, "portrait-art", "has-shop-art");
+          }
+        }
+      }
+
+      function renderBench() {
+        elements.bench.innerHTML = "";
+        for (let slot = 0; slot < maxBench; slot++) {
+          const unit = benched().find(item => item.slot === slot);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `bench-slot${unit ? " occupied" : ""}${unit && game.selected === unit.uid ? " selected" : ""}`;
+          button.dataset.slot = String(slot);
+          button.style.setProperty("--role-color", unit ? roleColor(unit) : "var(--line)");
+          if (unit) {
+            const definition = definitionOf(unit);
+            button.dataset.uid = unit.uid;
+            button.innerHTML = `${portraitMarkup(definition)}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role])}</span>${unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : ""}`;
+            button.setAttribute("aria-label", `${definition.name}, εφεδρεία`);
+          } else {
+            button.setAttribute("aria-label", `Κενή θέση ${slot + 1}`);
+            button.innerHTML = `<span aria-hidden="true">+</span>`;
+          }
+          if (unit) attachArt(button.querySelector(".portrait"), operatorAssets[definitionOf(unit).id]?.shop, "portrait-art", "has-shop-art");
+          elements.bench.append(button);
+        }
+      }
+
+      function renderShop() {
+        elements.shop.innerHTML = "";
+        game.shop.forEach((type, index) => {
+          if (!type) {
+            const emptyCard = document.createElement("button");
+            emptyCard.type = "button";
+            emptyCard.className = "shop-card shop-empty";
+            emptyCard.disabled = true;
+            emptyCard.setAttribute("aria-label", "Κενή θέση shop");
+            emptyCard.innerHTML = `<span class="shop-empty-label">Κενό</span>`;
+            elements.shop.append(emptyCard);
+            return;
+          }
+          const definition = byId[type];
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "shop-card";
+          card.dataset.shopIndex = String(index);
+          card.style.setProperty("--role-color", definition.color);
+          card.disabled = game.phase !== "prep" || game.gold < definition.cost || benched().length >= maxBench;
+          card.innerHTML = `<span class="shop-top">${portraitMarkup(definition)}<span class="tier-badge">Tier ${operatorTier(definition)}</span></span><span><span class="shop-name">${escapeHtml(definition.name)}</span><span class="shop-meta">E${definition.elite} Lv.${definition.level} · ${escapeHtml(roleNames[definition.role] || definition.role)}</span><span class="shop-base-stats">HP ${definition.hp} · ATK ${definition.attack}<br>DEF ${definition.defense} · RES ${definition.resistance}</span></span><span class="shop-cost">◈ ${definition.cost} LMD</span>`;
+          attachArt(card.querySelector(".portrait"), operatorAssets[definition.id]?.shop, "portrait-art", "has-shop-art");
+          card.setAttribute("aria-label", `Αγόρασε ${definition.name}, ${definition.cost} LMD`);
+          elements.shop.append(card);
+        });
+      }
+
+      function renderTraits() {
+        const { roleCounts, synergyCounts } = activeCounts();
+        const traits = [];
+        for (const role of roles) {
+          const count = roleCounts[role];
+          if (count) traits.push({ name: roleNames[role], sigil: roleSigils[role], count, active: count >= 2, effect: roleEffects[role] });
+        }
+        for (const [synergy, count] of Object.entries(synergyCounts)) {
+          const buffType = raceBuffTypes[synergy];
+          traits.push({ name: synergy, sigil: "R", count, active: count >= 2, effect: raceBuffEffects[buffType] });
+        }
+        elements.synergyCount.textContent = String(traits.filter(trait => trait.active).length).padStart(2, "0");
+        if (!traits.length) {
+          elements.traits.innerHTML = `<p class="empty-note">Οι συνέργειες εμφανίζονται όταν αναπτυχθούν operators.</p>`;
+          return;
+        }
+        elements.traits.innerHTML = traits.map(trait => `<div class="trait${trait.active ? " active" : ""}"><span class="trait-sigil">${trait.sigil}</span><span><span class="trait-name">${escapeHtml(trait.name)}</span><span class="trait-effect">${escapeHtml(trait.effect)}</span></span><span class="trait-count">${trait.count}</span></div>`).join("");
+      }
+
+      function renderSelected() {
+        const unit = game.allies.find(item => item.uid === game.selected);
+        if (!unit) {
+          elements.selectedInfo.innerHTML = `<p class="empty-note">Επίλεξε operator από την εφεδρεία ή το πεδίο.</p>`;
+          return;
+        }
+        const definition = definitionOf(unit);
+        const location = unit.location === "board" ? "ΣΤΟ ΠΕΔΙΟ" : "ΕΦΕΔΡΕΙΑ";
+        elements.selectedInfo.innerHTML = `<div class="selected-top">${portraitMarkup(definition)}<span><h3 class="selected-name">${escapeHtml(definition.name)}${unit.rank > 1 ? ` R${unit.rank}` : ""}</h3><p class="selected-sub">E${definition.elite} Lv.${definition.level} · ${escapeHtml(roleNames[definition.role] || definition.role)} · ${location}</p></span></div><p class="selected-lore"><strong>Φυλή</strong> ${escapeHtml(definition.race)}</p><div class="selected-stats"><span>HP <strong>${Math.round(definition.hp * (1 + (unit.rank - 1) * .65))}</strong></span><span>ATK <strong>${Math.round(definition.attack * (1 + (unit.rank - 1) * .65))}</strong></span><span>DEF <strong>${definition.defense}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>ΚΟΣΤΟΣ <strong>${definition.cost}</strong></span></div><div class="selected-actions"><button class="button compact" id="recall">${unit.location === "board" ? "Επιστροφή" : "Ανάπτυξη"}</button><button class="button compact danger" id="sell">Πώληση · ${Math.max(1, definition.cost * unit.rank)} LMD</button></div>`;
+        const formatStat = value => new Intl.NumberFormat("en-US").format(value);
+        elements.selectedInfo.querySelector(".selected-sub").textContent = `Tier ${operatorTier(definition)} · E${definition.elite} Lv.${definition.level} · DP ${definition.dpCost} · ${location}`;
+        elements.selectedInfo.querySelector(".selected-stats").innerHTML = `<span>HP <strong>${formatStat(definition.hp)}</strong></span><span>ATK <strong>${formatStat(definition.attack)}</strong></span><span>DEF <strong>${formatStat(definition.defense)}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>INTERVAL <strong>${definition.interval.toFixed(2)}s</strong></span>`;
+        attachArt(elements.selectedInfo.querySelector(".portrait"), operatorAssets[definition.id]?.shop, "portrait-art", "has-shop-art");
+        document.querySelector("#recall").addEventListener("click", recallSelected);
+        document.querySelector("#sell").addEventListener("click", sellSelected);
+      }
+
+      function render() {
+        elements.gold.textContent = String(game.gold);
+        elements.integrity.textContent = String(game.integrity);
+        elements.round.textContent = `Γύρος ${game.round}`;
+        elements.phase.textContent = game.phase === "battle" ? "ΦΑΣΗ ΜΑΧΗΣ" : game.phase === "gameover" ? "ΑΠΟΣΤΟΛΗ ΤΕΛΟΣ" : "ΦΑΣΗ ΠΡΟΕΤΟΙΜΑΣΙΑΣ";
+        elements.benchCount.textContent = String(benched().length);
+        elements.fieldCount.textContent = String(fielded().length);
+        elements.unitCap.textContent = String(unitCap());
+        elements.level.textContent = `LV. ${game.level} · T${unlockedOperatorTier(game.level)} · XP ${game.xp}/${xpTarget()}`;
+        elements.shopOdds.textContent = `Πιθανότητες: ${effectiveShopOdds().map(({ tier, chance }) => `T${tier} ${Math.round(chance * 100)}%`).join(" · ")}`;
+        elements.xpProgress.style.width = `${Math.min(100, game.xp / xpTarget() * 100)}%`;
+        elements.reroll.disabled = game.phase !== "prep" || game.gold < 2;
+        elements.buyXp.disabled = game.phase !== "prep" || game.gold < 4 || game.level >= 7;
+        elements.fight.disabled = (game.phase !== "prep" && game.phase !== "gameover") || (game.phase === "prep" && fielded().length === 0);
+        elements.fight.textContent = game.phase === "gameover" ? "Νέο παιχνίδι" : game.phase === "battle" ? "Μάχη σε εξέλιξη" : "Έναρξη μάχης";
+        renderBoardTokens();
+        renderBench();
+        renderShop();
+        renderTraits();
+        renderSelected();
+      }
+
+      function setReport(message) {
+        elements.report.textContent = message;
+      }
+
+      function emptyBenchSlot() {
+        const occupied = new Set(benched().map(unit => unit.slot));
+        for (let slot = 0; slot < maxBench; slot++) if (!occupied.has(slot)) return slot;
+        return -1;
+      }
+
+      function buyOperator(index) {
+        if (game.phase !== "prep") return;
+        const definition = byId[game.shop[index]];
+        if (!definition || game.gold < definition.cost || benched().length >= maxBench) return;
+        game.gold -= definition.cost;
+        game.shop[index] = null;
+        game.allies.push(makeUnit(definition.id, "bench", emptyBenchSlot()));
+        const merged = mergeCopies(definition.id);
+        setReport(merged ? `${definition.name}: οι operators συγχωνεύτηκαν και αναβαθμίστηκαν.` : `${definition.name} εντάχθηκε στην εφεδρεία.`);
+        render();
+      }
+
+      function mergeCopies(type) {
+        let merged = false;
+        while (true) {
+          const group = game.allies.filter(unit => unit.type === type);
+          const rank = [...new Set(group.map(unit => unit.rank))].sort((a, b) => a - b).find(value => group.filter(unit => unit.rank === value).length >= 3);
+          if (rank === undefined || rank >= 3) break;
+          const trio = group.filter(unit => unit.rank === rank).slice(0, 3);
+          const keeper = trio[0];
+          const fallen = new Set(trio.slice(1).map(unit => unit.uid));
+          game.allies = game.allies.filter(unit => !fallen.has(unit.uid));
+          keeper.rank++;
+          if (keeper.location === "bench") keeper.slot = trio.find(unit => unit.location === "bench")?.slot ?? keeper.slot;
+          merged = true;
+        }
+        return merged;
+      }
+
+      function reroll() {
+        if (game.phase !== "prep" || game.gold < 2) return;
+        game.gold -= 2;
+        rollShop();
+        setReport("Νέοι operators διαθέσιμοι στο κατάστημα.");
+        render();
+      }
+
+      function buyXp() {
+        if (game.phase !== "prep" || game.gold < 4 || game.level >= 7) return;
+        game.gold -= 4;
+        game.xp += 4;
+        const previousTier = unlockedOperatorTier(game.level);
+        while (game.level < 7 && game.xp >= xpTarget()) {
+          game.xp -= xpTarget();
+          game.level++;
+        }
+        const currentTier = unlockedOperatorTier(game.level);
+        if (currentTier > previousTier) {
+          rollShop();
+          setReport(`Ξεκλειδώθηκε Tier ${currentTier} operators. Όριο ανάπτυξης: ${unitCap()}.`);
+        } else {
+          setReport(`Εκπαίδευση ολοκληρώθηκε. Όριο ανάπτυξης: ${unitCap()}.`);
+        }
+        render();
+      }
+
+      function placeOnBoard(unit, x, y) {
+        if (y < 2 || y > 3) {
+          setReport("Οι operators αναπτύσσονται μόνο στις δύο κάτω σειρές.");
+          return false;
+        }
+        const occupant = fielded().find(other => other.x === x && other.y === y && other.uid !== unit.uid);
+        if (occupant) return false;
+        if (unit.location === "bench" && fielded().length >= unitCap()) {
+          setReport(`Αναβάθμισε το επίπεδο για να αναπτύξεις πάνω από ${unitCap()} operators.`);
+          return false;
+        }
+        unit.location = "board";
+        unit.x = x;
+        unit.y = y;
+        game.selected = null;
+        setReport(`${definitionOf(unit).name} αναπτύχθηκε στο πεδίο.`);
+        render();
+        return true;
+      }
+
+      function handleTileClick(tile) {
+        if (game.phase !== "prep" || !game.selected) return;
+        const unit = game.allies.find(item => item.uid === game.selected);
+        if (!unit) return;
+        const x = Number(tile.dataset.x);
+        const y = Number(tile.dataset.y);
+        const occupant = fielded().find(other => other.x === x && other.y === y && other.uid !== unit.uid);
+        if (!occupant) {
+          placeOnBoard(unit, x, y);
+          return;
+        }
+        if (unit.location === "board") {
+          const oldX = unit.x;
+          const oldY = unit.y;
+          occupant.x = oldX;
+          occupant.y = oldY;
+          unit.x = x;
+          unit.y = y;
+          game.selected = null;
+          setReport("Οι θέσεις των operators άλλαξαν.");
+          render();
+        }
+      }
+
+      function handleUnitClick(uid) {
+        if (game.phase !== "prep") return;
+        const unit = game.allies.find(item => item.uid === uid);
+        if (!unit) return;
+        if (game.selected && game.selected !== uid) {
+          const selected = game.allies.find(item => item.uid === game.selected);
+          if (selected && selected.location === "bench" && unit.location === "board") {
+            const slot = selected.slot;
+            selected.location = "board";
+            selected.x = unit.x;
+            selected.y = unit.y;
+            unit.location = "bench";
+            unit.slot = slot;
+            game.selected = null;
+            setReport("Οι operators αντάλλαξαν θέσεις.");
+            render();
+            return;
+          }
+          if (selected && selected.location === "board" && unit.location === "board") {
+            const x = selected.x;
+            const y = selected.y;
+            selected.x = unit.x;
+            selected.y = unit.y;
+            unit.x = x;
+            unit.y = y;
+            game.selected = null;
+            setReport("Οι operators αντάλλαξαν θέσεις.");
+            render();
+            return;
+          }
+        }
+        game.selected = game.selected === uid ? null : uid;
+        render();
+      }
+
+      function handleBenchSlot(slot, uid) {
+        if (game.phase !== "prep") return;
+        if (uid) {
+          handleUnitClick(uid);
+          return;
+        }
+        const selected = game.allies.find(unit => unit.uid === game.selected);
+        if (!selected || selected.location !== "board") return;
+        selected.location = "bench";
+        selected.slot = Number(slot);
+        game.selected = null;
+        setReport(`${definitionOf(selected).name} επέστρεψε στην εφεδρεία.`);
+        render();
+      }
+
+      function recallSelected() {
+        const unit = game.allies.find(item => item.uid === game.selected);
+        if (!unit || game.phase !== "prep") return;
+        if (unit.location === "bench") {
+          const x = (fielded().length % gridWidth);
+          const y = 3;
+          const empty = fielded().find(other => other.x === x && other.y === y);
+          if (empty) {
+            setReport("Επίλεξε κενό κελί για ανάπτυξη.");
+            return;
+          }
+          placeOnBoard(unit, x, y);
+          return;
+        }
+        const slot = emptyBenchSlot();
+        if (slot < 0) {
+          setReport("Δεν υπάρχει ελεύθερη θέση στην εφεδρεία.");
+          return;
+        }
+        unit.location = "bench";
+        unit.slot = slot;
+        game.selected = null;
+        render();
+      }
+
+      function sellSelected() {
+        const index = game.allies.findIndex(unit => unit.uid === game.selected);
+        if (index < 0 || game.phase !== "prep") return;
+        const unit = game.allies[index];
+        const value = Math.max(1, definitionOf(unit).cost * unit.rank);
+        game.gold += value;
+        game.allies.splice(index, 1);
+        game.selected = null;
+        setReport(`${definitionOf(unit).name} αποσύρθηκε. +${value} LMD.`);
+        render();
+      }
+
+      function makeEnemy(index, count) {
+        const rolesForEnemy = ["Guard", "Defender", "Sniper", "Caster"];
+        const role = rolesForEnemy[(index + game.round) % rolesForEnemy.length];
+        const x = Math.round((index + .5) * gridWidth / count - .5);
+        const y = index % 2;
+        const definition = {
+          id: `target-${game.round}-${index}`,
+          name: `Target ${String(index + 1).padStart(2, "0")}`,
+          initials: "!",
+          role,
+          faction: "Hostile",
+          cost: 1,
+          hp: 720 + game.round * 90 + (role === "Defender" ? 350 : 0),
+          attack: 110 + game.round * 12 + (role === "Caster" ? 25 : 0),
+          defense: 55 + game.round * 7 + (role === "Defender" ? 90 : 0),
+          resistance: role === "Caster" ? 15 : 0,
+          interval: role === "Sniper" ? 1.5 : 1.3,
+          damageType: role === "Caster" ? "arts" : "physical",
+          moveSpeed: 1,
+          range: role === "Sniper" || role === "Caster" ? 2.5 : 1.15,
+          color: "var(--red)"
+        };
+        return { uid: `enemy-${game.round}-${index}`, type: definition.id, definition, team: "enemy", location: "board", x, y, rank: 1, hp: 0, maxHp: 0 };
+      }
+
+      function makeEnemyWave() {
+        const count = Math.min(7, 1 + Math.floor((game.round + 1) / 2));
+        return Array.from({ length: count }, (_, index) => makeEnemy(index, count));
+      }
+
+      function startBattle() {
+        if (game.phase === "gameover") {
+          resetGame();
+          return;
+        }
+        if (game.phase !== "prep" || fielded().length === 0) return;
+        game.phase = "battle";
+        game.selected = null;
+        game.battleTime = 0;
+        for (const unit of fielded()) {
+          unit.homeX = unit.x;
+          unit.homeY = unit.y;
+          effectiveStats(unit);
+        }
+        for (const enemy of game.enemies) effectiveStats(enemy, true);
+        game.vanguardBonus = activeCounts().roleCounts.Vanguard >= 2 ? 1 : 0;
+        setReport(`Μάχη ${game.round}: οι operators προχωρούν αυτόματα προς τους στόχους.`);
+        render();
+        game.frameTime = performance.now();
+        requestAnimationFrame(battleFrame);
+      }
+
+      function nearestEnemy(unit) {
+        const opponents = unit.team === "enemy" ? fielded() : game.enemies;
+        let target = null;
+        let nearest = Infinity;
+        for (const opponent of opponents) {
+          if (!alive(opponent)) continue;
+          const distance = Math.hypot(unit.x - opponent.x, unit.y - opponent.y);
+          if (distance < nearest) {
+            target = opponent;
+            nearest = distance;
+          }
+        }
+        return { target, distance: nearest };
+      }
+
+      function hitEffect(unit, target) {
+        const attackerNode = game.nodeById.get(unit.uid);
+        if (attackerNode) {
+          attackerNode.classList.remove("swing");
+          void attackerNode.offsetWidth;
+          attackerNode.classList.add("swing");
+        }
+        const node = game.nodeById.get(target.uid);
+        if (node) {
+          node.classList.remove("hit");
+          void node.offsetWidth;
+          node.classList.add("hit");
+        }
+        const effect = document.createElement("span");
+        effect.className = "board-flash";
+        effect.style.left = `${(target.x + .5) / gridWidth * 100}%`;
+        effect.style.top = `${(target.y + .5) / gridHeight * 100}%`;
+        elements.battlefield.append(effect);
+        effect.addEventListener("animationend", () => effect.remove(), { once: true });
+      }
+
+      function advanceBattle(dt) {
+        game.battleTime += dt;
+        const combatants = [...fielded(), ...game.enemies].filter(alive);
+        for (const unit of combatants) {
+          unit.cooldown = Math.max(0, unit.cooldown - dt);
+          const { target, distance } = nearestEnemy(unit);
+          if (!target) continue;
+          const node = game.nodeById.get(unit.uid);
+          if (node) node.classList.toggle("faces-left", target.x < unit.x);
+          if (distance <= unit.range) {
+            if (unit.cooldown <= 0) {
+              const damage = unit.damageType === "arts"
+                ? unit.attack * (1 - target.resistance / 100)
+                : Math.max(unit.attack * .05, unit.attack - target.defense);
+              target.hp = Math.max(0, target.hp - damage);
+              if (target.hp <= 0) target.dead = true;
+              unit.cooldown = 1 / unit.rate;
+              hitEffect(unit, target);
+            }
+          } else {
+            const travel = Math.min(distance - unit.range + .02, unit.moveSpeed * dt);
+            unit.x += (target.x - unit.x) / distance * travel;
+            unit.y += (target.y - unit.y) / distance * travel;
+          }
+        }
+        updateBattleNodes();
+        const alliesAlive = fielded().some(alive);
+        const enemiesAlive = game.enemies.some(alive);
+        if (!alliesAlive || !enemiesAlive || game.battleTime > 36) {
+          resolveBattle(alliesAlive && (!enemiesAlive || remainingHealth(fielded()) >= remainingHealth(game.enemies)));
+          return false;
+        }
+        return true;
+      }
+
+      function remainingHealth(team) {
+        return team.filter(alive).reduce((total, unit) => total + unit.hp / unit.maxHp, 0);
+      }
+
+      function updateBattleNodes() {
+        for (const unit of [...fielded(), ...game.enemies]) {
+          const node = game.nodeById.get(unit.uid);
+          if (!node) continue;
+          node.style.left = `${(unit.x + .5) / gridWidth * 100}%`;
+          node.style.top = `${(unit.y + .5) / gridHeight * 100}%`;
+          node.querySelector(".health-fill").style.width = `${Math.max(0, unit.hp / unit.maxHp * 100)}%`;
+          node.classList.toggle("dead", !alive(unit));
+        }
+      }
+
+      function battleFrame(now) {
+        if (game.phase !== "battle") return;
+        const dt = Math.min((now - game.frameTime) / 1000, .04);
+        game.frameTime = now;
+        if (advanceBattle(dt)) requestAnimationFrame(battleFrame);
+      }
+
+      function resolveBattle(victory) {
+        const roundEnded = game.round;
+        const damage = victory ? 0 : Math.max(1, game.enemies.filter(alive).length);
+        game.enemies = [];
+        if (victory) {
+          const reward = 5 + Math.floor(game.round / 3) + game.vanguardBonus;
+          game.gold += reward;
+          setReport(`Νίκη στον γύρο ${roundEnded}. +${reward} LMD · οι operators ανασυντάσσονται.`);
+        } else {
+          game.integrity = Math.max(0, game.integrity - damage * 8);
+          game.gold += 3;
+          setReport(`Ήττα στον γύρο ${roundEnded}. -${damage * 8} integrity · +3 LMD.`);
+        }
+        game.phase = game.integrity <= 0 ? "gameover" : "prep";
+        if (game.phase === "gameover") {
+          elements.fight.textContent = "Νέο παιχνίδι";
+          setReport("Η αποστολή απέτυχε. Πάτησε «Νέο παιχνίδι» για νέα ανάπτυξη.");
+        } else {
+          game.round++;
+          for (const unit of fielded()) {
+            unit.x = unit.homeX;
+            unit.y = unit.homeY;
+            unit.hp = 0;
+          }
+          game.enemies = makeEnemyWave();
+          rollShop();
+        }
+        render();
+      }
+
+      function resetGame() {
+        game.gold = 10;
+        game.integrity = 100;
+        game.round = 1;
+        game.level = 3;
+        game.xp = 0;
+        game.phase = "prep";
+        game.allies = [];
+        game.enemies = makeEnemyWave();
+        game.selected = null;
+        rollShop();
+        setReport("Αγόρασε operators, τοποθέτησέ τους στη ζώνη ανάπτυξης και ξεκίνα τη μάχη.");
+        render();
+      }
+
+      elements.tileGrid.addEventListener("click", event => {
+        const tile = event.target.closest(".tile");
+        if (tile) handleTileClick(tile);
+      });
+      elements.tokenLayer.addEventListener("click", event => {
+        const token = event.target.closest(".unit-chip");
+        if (token) handleUnitClick(token.dataset.uid);
+      });
+      elements.tokenLayer.addEventListener("keydown", event => {
+        const token = event.target.closest(".unit-chip");
+        if (token && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          handleUnitClick(token.dataset.uid);
+        }
+      });
+      elements.bench.addEventListener("click", event => {
+        const slot = event.target.closest(".bench-slot");
+        if (slot) handleBenchSlot(slot.dataset.slot, slot.dataset.uid);
+      });
+      elements.shop.addEventListener("click", event => {
+        const card = event.target.closest(".shop-card");
+        if (card) buyOperator(Number(card.dataset.shopIndex));
+      });
+      elements.reroll.addEventListener("click", reroll);
+      elements.buyXp.addEventListener("click", buyXp);
+      elements.fight.addEventListener("click", startBattle);
+
+      renderTiles();
+      rollShop();
+      game.enemies = makeEnemyWave();
+      render();
+    })();
+  </script>
+</body>
+</html>
