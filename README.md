@@ -1,4 +1,4 @@
-# Arknights Tactics
+# Arknights Tactics Fan Game
 
 A browser-based Arknights-inspired tactics game. It runs as a static site and supports single-player battles plus casual real-time 1v1 rooms.
 
