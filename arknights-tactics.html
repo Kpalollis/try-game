@@ -146,8 +146,15 @@
     .battle-figure .battle-art { position: absolute; z-index: 2; inset: 0; display: none; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
     .battle-figure.has-walk-art .walk-frame { display: block; }
     .battle-figure.has-walk-art > svg { opacity: 0; }
+    .battle-figure.has-directional-art .directional-idle { display: block; }
+    .battle-figure.has-directional-art > svg { opacity: 0; }
+    .combat-sprite.walking .battle-figure.has-directional-art .directional-idle { display: none; }
+    .combat-sprite.walking .battle-figure.has-directional-art .directional-walk { display: block; }
+    .combat-sprite.walking .battle-figure.has-video-walk-art .midnight-walk-video { display: block; }
+    .combat-sprite.walking .battle-figure.has-video-walk-art > svg { opacity: 0; }
     .combat-sprite.walking .battle-figure.has-walk-bob .walk-frame { animation: battle-art-walk-bob 300ms ease-in-out infinite; }
     .combat-sprite.faces-left .battle-figure .battle-art { transform: scaleX(-1); }
+    .combat-sprite.directional-sprite.faces-left .battle-figure .battle-art { transform: none; }
     .battle-figure.has-attack-art .attack-frame { display: none; }
     .combat-sprite.swing .battle-figure.has-attack-art .attack-frame { display: block; }
     .combat-sprite.swing .battle-figure.has-attack-art .walk-frame { display: none; }
@@ -595,8 +602,15 @@
       operatorAssets["char_113_cqbw"].walkFrames = Array.from({ length: 28 }, (_, index) =>
         `assets/operators/char_113_cqbw/image02-frames/frame-${String(index + 1).padStart(2, "0")}.png`
       );
-      operatorAssets["char_290_vigna"].walk = "assets/operators/char_290_vigna/char_290_vigna-walk.png";
-      operatorAssets["char_290_vigna"].walkBob = true;
+      const vignaDirections = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+      const vignaWalkFiles = { north: "Idle_v3_running_north (1).gif" };
+      operatorAssets["char_290_vigna"].idleDirections = Object.fromEntries(vignaDirections.map(direction =>
+        [direction, `vigna/Idle/rotations/${direction}.png`]
+      ));
+      operatorAssets["char_290_vigna"].walkDirections = Object.fromEntries(vignaDirections.map(direction =>
+        [direction, `vigna/${vignaWalkFiles[direction] || `Idle_v3_running_${direction}.gif`}`]
+      ));
+      operatorAssets["char_283_midn"].walkVideo = "Midnight.webm";
       operatorAssets["char_002_amiya"] = {
         walk: "assets/operators/amiya/Pasted Image.png",
         shop: "assets/operators/amiya/Pasted Image 2.png",
@@ -1050,6 +1064,71 @@
         });
       }
 
+      function attachVideoArt(target, source) {
+        if (!target || !source) return;
+        const video = document.createElement("video");
+        video.className = "battle-art midnight-walk-video";
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.preload = "auto";
+        video.addEventListener("canplay", () => {
+          target.classList.add("has-video-walk-art");
+        }, { once: true });
+        video.addEventListener("error", () => {
+          video.remove();
+        }, { once: true });
+        video.src = source;
+        target.append(video);
+      }
+
+      function setVideoWalking(node, walking) {
+        const video = node?.querySelector(".midnight-walk-video");
+        if (!video) return;
+        if (walking && video.paused) video.play().catch(() => {});
+        if (!walking && !video.paused) {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+
+      function attachDirectionalArt(target, assets) {
+        if (!target) return;
+        const idleImage = new Image();
+        idleImage.className = "battle-art directional-idle";
+        idleImage.alt = "";
+        const walkImage = new Image();
+        walkImage.className = "battle-art directional-walk";
+        walkImage.alt = "";
+        for (const image of [idleImage, walkImage]) {
+          image.onload = () => {
+            target.classList.remove("art-loading", "art-missing");
+            target.classList.add("has-directional-art");
+          };
+          image.onerror = () => {
+            target.classList.remove("art-loading");
+            target.classList.add("art-missing");
+          };
+        }
+        target.classList.add("art-loading");
+        idleImage.src = assets.idleDirections.south;
+        walkImage.src = assets.walkDirections.south;
+        target.append(idleImage, walkImage);
+      }
+
+      function setDirectionalArt(node, assets, direction, walking) {
+        const figure = node.querySelector(".battle-figure");
+        const image = figure?.querySelector(walking ? ".directional-walk" : ".directional-idle");
+        const source = (walking ? assets.walkDirections : assets.idleDirections)[direction];
+        if (image && image.getAttribute("src") !== source) image.src = source;
+      }
+
+      function directionFromVector(dx, dy) {
+        if (!dx && !dy) return "south";
+        const directions = ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"];
+        return directions[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8];
+      }
+
       function attachAnimatedArt(target, sources, className, loadedClass) {
         if (!target || !sources?.length) return;
         target.classList.add("art-loading");
@@ -1096,13 +1175,19 @@
           const assets = enemy ? null : operatorAssets[definitionOf(unit).id];
           if (assets && game.phase === "battle") {
             const figure = node.querySelector(".battle-figure");
-            if (assets.walkBob) figure.classList.add("has-walk-bob");
+            if (assets.walkVideo) attachVideoArt(figure, assets.walkVideo);
+            if (assets.idleDirections && assets.walkDirections) {
+              node.classList.add("directional-sprite");
+              attachDirectionalArt(figure, assets);
+            } else if (assets.walkBob) {
+              figure.classList.add("has-walk-bob");
+            }
             if (assets.walkFrames) {
               attachAnimatedArt(figure, assets.walkFrames, "battle-art walk-frame", "has-walk-art");
-            } else {
+            } else if (!assets.idleDirections && !assets.walkVideo) {
               attachArt(figure, assets.walk, "battle-art walk-frame", "has-walk-art");
             }
-            if (!assets.walkFrames) attachArt(figure, assets.attack, "battle-art attack-frame", "has-attack-art");
+            if (!assets.walkFrames && !assets.idleDirections && !assets.walkVideo) attachArt(figure, assets.attack, "battle-art attack-frame", "has-attack-art");
           } else if (assets) {
             attachArt(node.querySelector(".portrait"), assets.shop, "portrait-art", "has-shop-art");
           }
@@ -1810,12 +1895,22 @@
         for (const unit of combatants) {
           unit.cooldown = Math.max(0, unit.cooldown - dt);
           const node = game.nodeById.get(unit.uid);
+          const assets = unit.team === "enemy" ? null : operatorAssets[definitionOf(unit).id];
           const { target, distance } = nearestEnemy(unit);
           if (!target) {
-            if (node) node.classList.remove("walking");
+            if (node) {
+              node.classList.remove("walking");
+              if (assets?.idleDirections) setDirectionalArt(node, assets, "south", false);
+              setVideoWalking(node, false);
+            }
             continue;
           }
-          if (node) node.classList.toggle("faces-left", target.x < unit.x);
+          setVideoWalking(node, distance > unit.range);
+          if (assets?.idleDirections) {
+            if (node) setDirectionalArt(node, assets, directionFromVector(target.x - unit.x, target.y - unit.y), distance > unit.range);
+          } else if (node) {
+            node.classList.toggle("faces-left", target.x < unit.x);
+          }
           if (distance <= unit.range) {
             if (node) node.classList.remove("walking");
             if (unit.cooldown <= 0) {
