@@ -536,7 +536,8 @@
           { id: "char_311_mudrok", tier: 5 },
           { id: "char_179_cgbird", tier: 5 },
           { id: "char_1035_wisdel", tier: 6 },
-          { id: "char_4133_logos", tier: 6 }
+          { id: "char_4133_logos", tier: 6 },
+          { id: "char_113_cqbw", tier: 6 }
         ]
       };
       const customOperatorTierById = Object.fromEntries(Object.values(customOperatorGroups)
@@ -589,12 +590,15 @@
           attack: `assets/operators/${assetId}/${assetId}-attack.png`
         }];
       }));
+      operatorAssets["char_113_cqbw"].walkFrames = Array.from({ length: 28 }, (_, index) =>
+        `assets/operators/char_113_cqbw/image02-frames/frame-${String(index + 1).padStart(2, "0")}.png`
+      );
       operatorAssets["char_002_amiya"] = {
         walk: "assets/operators/amiya/Pasted Image.png",
         shop: "assets/operators/amiya/Pasted Image 2.png",
         attack: "assets/operators/amiya/Pasted Image 3.png"
       };
-      if (definitions.some(definition => definition.id === "amiya")) operatorAssets.amiya = operatorAssets.amiya || operatorAssets["char_002_amiya"];
+      if (definitions.some(definition => definition.id === "amiya")) operatorAssets.amiya = operatorAssets["char_002_amiya"];
       const processedArt = new Map();
       const byId = Object.fromEntries(definitions.map(definition => [definition.id, definition]));
       const roleNames = { Guard: "Guard", Defender: "Defender", Sniper: "Sniper", Caster: "Caster", Vanguard: "Vanguard", Medic: "Medic", Specialist: "Specialist", Supporter: "Supporter" };
@@ -998,17 +1002,7 @@
         return canvas.toDataURL("image/png");
       }
 
-      function attachArt(target, source, className, loadedClass) {
-        if (!target || !source) return;
-        target.classList.add("art-loading");
-        const image = new Image();
-        image.className = className;
-        image.alt = "";
-        image.onerror = () => {
-          image.remove();
-          target.classList.remove("art-loading");
-          target.classList.add("art-missing");
-        };
+      function loadProcessedArt(source) {
         if (!processedArt.has(source)) {
           processedArt.set(source, new Promise((resolve, reject) => {
             const original = new Image();
@@ -1023,7 +1017,21 @@
             original.src = source;
           }));
         }
-        processedArt.get(source).then(processedSource => {
+        return processedArt.get(source);
+      }
+
+      function attachArt(target, source, className, loadedClass) {
+        if (!target || !source) return;
+        target.classList.add("art-loading");
+        const image = new Image();
+        image.className = className;
+        image.alt = "";
+        image.onerror = () => {
+          image.remove();
+          target.classList.remove("art-loading");
+          target.classList.add("art-missing");
+        };
+        loadProcessedArt(source).then(processedSource => {
           if (!target.isConnected) return;
           image.onload = () => {
             target.classList.remove("art-loading");
@@ -1032,6 +1040,41 @@
           };
           image.src = processedSource;
           target.append(image);
+        }).catch(() => {
+          target.classList.remove("art-loading");
+          target.classList.add("art-missing");
+        });
+      }
+
+      function attachAnimatedArt(target, sources, className, loadedClass) {
+        if (!target || !sources?.length) return;
+        target.classList.add("art-loading");
+        const image = new Image();
+        image.className = className;
+        image.alt = "";
+        image.onerror = () => {
+          image.remove();
+          target.classList.remove("art-loading");
+          target.classList.add("art-missing");
+        };
+        Promise.all(sources.map(loadProcessedArt)).then(processedSources => {
+          if (!target.isConnected) return;
+          let frameIndex = 0;
+          const showFrame = () => {
+            if (!image.isConnected) return;
+            image.src = processedSources[frameIndex];
+            window.setTimeout(() => {
+              frameIndex = (frameIndex + 1) % processedSources.length;
+              showFrame();
+            }, frameIndex === processedSources.length - 1 ? 300 : 100);
+          };
+          image.onload = () => {
+            target.classList.remove("art-loading");
+            target.classList.remove("art-missing");
+            target.classList.add(loadedClass);
+          };
+          target.append(image);
+          showFrame();
         }).catch(() => {
           target.classList.remove("art-loading");
           target.classList.add("art-missing");
@@ -1049,8 +1092,12 @@
           const assets = enemy ? null : operatorAssets[definitionOf(unit).id];
           if (assets && game.phase === "battle") {
             const figure = node.querySelector(".battle-figure");
-            attachArt(figure, assets.walk, "battle-art walk-frame", "has-walk-art");
-            attachArt(figure, assets.attack, "battle-art attack-frame", "has-attack-art");
+            if (assets.walkFrames) {
+              attachAnimatedArt(figure, assets.walkFrames, "battle-art walk-frame", "has-walk-art");
+            } else {
+              attachArt(figure, assets.walk, "battle-art walk-frame", "has-walk-art");
+            }
+            if (!assets.walkFrames) attachArt(figure, assets.attack, "battle-art attack-frame", "has-attack-art");
           } else if (assets) {
             attachArt(node.querySelector(".portrait"), assets.shop, "portrait-art", "has-shop-art");
           }
