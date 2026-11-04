@@ -428,7 +428,7 @@
 
         <section class="shop-area" aria-label="Operator shop">
           <div class="section-heading shop-heading">
-            <div class="shop-heading-copy"><h2>Available Operators</h2><small id="shop-odds"></small><small>Unlocks: Tier 1 Lv.1 · Tier 2 Lv.3 · Tier 3 Lv.5 · Tier 4 Lv.7</small></div>
+            <div class="shop-heading-copy"><h2>Available Operators</h2><small id="shop-odds"></small><small>Unlocks: Tier 1 Lv.1 · Tier 2 Lv.2 · Tier 3 Lv.3 · Tier 4 Lv.4 · Tier 5 Lv.5 · Tier 6 Lv.7</small></div>
             <div class="shop-controls">
               <button class="button compact" id="reroll">Reroll · 2 LMD</button>
               <button class="button compact" id="buy-xp">Train · 4 LMD</button>
@@ -478,38 +478,60 @@
         { id: "saria", name: "Saria", initials: "SR", role: "Defender", faction: "Rhodes Island", cost: 2, rarity: 6, elite: 2, level: 90, dpCost: 22, hp: 3150, attack: 535, defense: 655, resistance: 10, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--defender)" },
         { id: "blaze", name: "Blaze", initials: "BZ", role: "Guard", faction: "Rhodes Island", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 24, hp: 2821, attack: 825, defense: 415, resistance: 0, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.2, color: "var(--guard)" }
       ];
-      const allowedOperatorRaces = new Set(["aegir", "egir", "liberi", "sarkaz"]);
-      const restoredOperatorFactions = new Set([
-        "yan", "sargon", "laterano", "kazimierz", "siracusa", "kjerag", "victoria",
-        "ursus"
-      ]);
-      const excludedOperatorFactions = new Set([
-        "columbia", "iberia", "leithanien", "rim", "rhodes", "lungmen"
-      ]);
-      const balancedRosterOperatorIds = new Set([
-        "char_133_mm", "char_385_finlpp", "char_192_falco", "char_4062_totter", "char_198_blackd",
-        "char_126_shotst", "char_190_clour", "char_4208_wintim", "char_302_glaze", "char_137_brownb",
-        "char_381_bubble", "char_349_chiave", "char_237_gravel", "char_141_nights", "char_4067_lolxh",
-        "char_199_yak", "char_271_spikes", "char_127_estell", "char_185_frncat", "char_445_wscoot",
-        "char_196_sunbr", "char_4107_vrdant", "char_4148_philae", "char_475_akafyu", "char_422_aurora",
-        "char_4102_threye", "char_218_cuttle", "char_346_aosta", "char_431_ashlok", "char_446_aroma",
-        "char_173_slchan", "char_4036_forcer", "char_4122_grabds", "char_478_kirara", "char_204_platnm",
-        "char_405_absin", "char_344_beewax", "char_369_bena", "char_252_bibeak", "char_275_breeze",
-        "char_4177_brigid", "char_356_broca", "char_4162_cathy", "char_4225_tanya", "char_157_dagda",
-        "char_4110_delphn", "char_4043_erato", "char_4088_hodrer", "char_179_cgbird", "char_291_aglina",
-        "char_332_archet", "char_222_bpipe", "char_4037_demetr", "char_423_blemsh", "char_1050_chen3",
-        "char_4231_clemnt", "char_4116_blkkgt", "char_416_zumama", "char_1032_excu2", "char_430_fartth",
-        "char_300_phenxi", "char_420_flamtl", "char_206_gnosis", "char_377_gdglow", "char_4202_haruka"
-      ]);
-      const hasOperatorData = Boolean(window.operatorData?.length);
-      const rosterSource = hasOperatorData ? window.operatorData : starterDefinitions;
-      const definitions = rosterSource.filter(definition => {
-        if (!hasOperatorData) return true;
-        return balancedRosterOperatorIds.has(definition.id) &&
-          !(definition.faction && excludedOperatorFactions.has(definition.faction.toLowerCase())) &&
-          ((definition.race && allowedOperatorRaces.has(definition.race.toLowerCase())) ||
-            (definition.faction && restoredOperatorFactions.has(definition.faction.toLowerCase())));
-      });
+      const customOperatorGroups = {
+        Yan: [
+          { id: "char_306_leizi", tier: 1 },
+          { id: "char_4122_grabds", tier: 2 },
+          { id: "char_308_swire", tier: 3 },
+          { id: "char_1033_swire2", tier: 3 },
+          { id: "char_136_hsguma", tier: 4 },
+          { id: "char_1040_blaze2", tier: 5 },
+          { id: "custom_dusk", tier: 5 },
+          { id: "char_4196_reckpr", tier: 5 },
+          { id: "custom_yu", tier: 6 },
+          { id: "char_4082_qiubai", tier: 6 }
+        ],
+        Aegir: [
+          { id: "char_4137_udflow", tier: 1 },
+          { id: "custom_specter", tier: 2 },
+          { id: "custom_skadi", tier: 3 },
+          { id: "char_4079_haini", tier: 3 },
+          { id: "char_437_mizuki", tier: 4 },
+          { id: "custom_gladiia", tier: 4 },
+          { id: "char_4145_ulpia", tier: 5 },
+          { id: "char_1023_ghost2", tier: 5 },
+          { id: "custom_skadi_corrupting_heart", tier: 6 }
+        ],
+        Siracusa: [
+          { id: "char_145_prove", tier: 1 },
+          { id: "char_102_texas", tier: 1 },
+          { id: "char_140_whitew", tier: 1 },
+          { id: "char_4026_vulpis", tier: 3 },
+          { id: "char_427_vigil", tier: 3 },
+          { id: "char_446_aroma", tier: 4 },
+          { id: "char_1028_texas2", tier: 4 },
+          { id: "char_358_lisa", tier: 5 },
+          { id: "char_291_aglina", tier: 5 },
+          { id: "char_1038_whitw2", tier: 6 }
+        ]
+      };
+      const customOperatorTierById = Object.fromEntries(Object.values(customOperatorGroups)
+        .flat()
+        .map(operator => [operator.id, operator.tier]));
+      const customOperatorGroupById = Object.fromEntries(Object.entries(customOperatorGroups)
+        .flatMap(([group, operators]) => operators.map(operator => [operator.id, group])));
+      const customManualOperators = [
+        { id: "custom_dusk", name: "Dusk", initials: "DU", role: "Caster", faction: "Yan", race: "Lung", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 24, hp: 2000, attack: 760, defense: 140, resistance: 20, interval: 2.9, damageType: "arts", moveSpeed: 1, range: 2.5, color: "var(--caster)" },
+        { id: "custom_yu", name: "Yu", initials: "YU", role: "Guard", faction: "Yan", race: "Lung", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 22, hp: 2700, attack: 850, defense: 420, resistance: 0, interval: 1.3, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--guard)" },
+        { id: "custom_specter", name: "Specter", initials: "SP", role: "Guard", faction: "Aegir", race: "Aegir", cost: 2, rarity: 5, elite: 1, level: 50, dpCost: 21, hp: 2800, attack: 800, defense: 400, resistance: 0, interval: 1.2, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--guard)" },
+        { id: "custom_skadi", name: "Skadi", initials: "SK", role: "Guard", faction: "Aegir", race: "Aegir", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 21, hp: 3000, attack: 950, defense: 450, resistance: 0, interval: 1.5, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--guard)" },
+        { id: "custom_gladiia", name: "Gladiia", initials: "GL", role: "Specialist", faction: "Aegir", race: "Aegir", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 14, hp: 2200, attack: 750, defense: 420, resistance: 0, interval: 1.8, damageType: "physical", moveSpeed: 1, range: 1.15, color: "var(--specialist)" },
+        { id: "custom_skadi_corrupting_heart", name: "Skadi the Corrupting Heart", initials: "SK", role: "Supporter", faction: "Aegir", race: "Aegir", cost: 3, rarity: 6, elite: 2, level: 90, dpCost: 8, hp: 2000, attack: 600, defense: 180, resistance: 15, interval: 1.5, damageType: "arts", moveSpeed: 1, range: 2.5, color: "var(--supporter)" }
+      ];
+      const rosterSource = window.operatorData?.length ? window.operatorData : starterDefinitions;
+      const sourceOperatorIds = new Set(rosterSource.map(definition => definition.id));
+      const definitions = [...rosterSource, ...customManualOperators.filter(definition => !sourceOperatorIds.has(definition.id))]
+        .filter(definition => Object.hasOwn(customOperatorTierById, definition.id));
       const operatorLooks = {
         amiya: { hair: "#775845", accent: "#d8cbb1", coat: "#52627a", inner: "#d6d3c4", trim: "#d7bf71", pants: "#343b48", feature: "ears" },
         exusiai: { hair: "#c35c4c", accent: "#e5bf74", coat: "#9b5547", inner: "#e6dfc9", trim: "#e7bd64", pants: "#384047", feature: "halo" },
@@ -654,10 +676,14 @@
 
       const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
       const definitionOf = unit => unit.definition || byId[unit.type];
-      const synergiesOf = definition => [...new Set([definition.race, definition.faction]
-        .filter(Boolean)
-        .map(value => synergyNames[value.toLowerCase()])
-        .filter(Boolean))];
+      const synergiesOf = definition => {
+        const customGroup = customOperatorGroupById[definition.id];
+        if (customGroup) return [customGroup];
+        return [...new Set([definition.race, definition.faction]
+          .filter(Boolean)
+          .map(value => synergyNames[value.toLowerCase()])
+          .filter(Boolean))];
+      };
       const roleColor = unit => definitionOf(unit).color;
       const alive = unit => unit.hp > 0;
       const fielded = () => game.allies.filter(unit => unit.location === "board");
@@ -665,31 +691,16 @@
       const xpRequiredByLevel = [0, 6, 12, 18, 26, 34, 42];
       const xpTarget = () => xpRequiredByLevel[game.level] || 0;
       const unitCap = () => game.level;
-      const operatorTierOverrides = {
-        char_385_finlpp: 1,
-        char_4062_totter: 1,
-        char_126_shotst: 1,
-        char_190_clour: 1,
-        char_349_chiave: 2,
-        char_198_blackd: 1,
-        char_133_mm: 1,
-        char_137_brownb: 1,
-        char_381_bubble: 1,
-        char_237_gravel: 1,
-        char_4067_lolxh: 1,
-        char_199_yak: 1
-      };
-      const operatorTier = definition => operatorTierOverrides[definition.id] ??
-        (definition.rarity <= 3 ? 1 : definition.rarity === 4 ? 2 : definition.rarity === 5 ? 3 : 4);
-      const unlockedOperatorTier = level => level >= 7 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
+      const operatorTier = definition => customOperatorTierById[definition.id];
+      const unlockedOperatorTier = level => level >= 7 ? 6 : level >= 5 ? 5 : level >= 4 ? 4 : level >= 3 ? 3 : level >= 2 ? 2 : 1;
       const shopTierOdds = {
-        1: [100, 0, 0, 0],
-        2: [100, 0, 0, 0],
-        3: [75, 25, 0, 0],
-        4: [55, 30, 15, 0],
-        5: [45, 33, 20, 2],
-        6: [30, 40, 25, 5],
-        7: [19, 30, 40, 11]
+        1: [100, 0, 0, 0, 0, 0],
+        2: [85, 15, 0, 0, 0, 0],
+        3: [75, 20, 5, 0, 0, 0],
+        4: [55, 25, 15, 5, 0, 0],
+        5: [45, 30, 18, 6, 1, 0],
+        6: [30, 35, 22, 10, 3, 0],
+        7: [20, 30, 25, 15, 8, 2]
       };
 
       function makeUnit(type, location, slot = 0, rank = 1) {
