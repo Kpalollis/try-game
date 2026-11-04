@@ -146,6 +146,7 @@
     .battle-figure .battle-art { position: absolute; z-index: 2; inset: 0; display: none; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
     .battle-figure.has-walk-art .walk-frame { display: block; }
     .battle-figure.has-walk-art > svg { opacity: 0; }
+    .combat-sprite.walking .battle-figure.has-walk-bob .walk-frame { animation: battle-art-walk-bob 300ms ease-in-out infinite; }
     .combat-sprite.faces-left .battle-figure .battle-art { transform: scaleX(-1); }
     .battle-figure.has-attack-art .attack-frame { display: none; }
     .combat-sprite.swing .battle-figure.has-attack-art .attack-frame { display: block; }
@@ -323,6 +324,7 @@
     @keyframes hit { 50% { filter: brightness(2.2); } }
     @keyframes pop { from { opacity: .9; transform: scale(.5); } to { opacity: 0; transform: scale(2.5); } }
     @keyframes walk-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+    @keyframes battle-art-walk-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
     @keyframes step-a { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(-12deg); } }
     @keyframes step-b { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
     @keyframes arm-a { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
@@ -594,6 +596,7 @@
         `assets/operators/char_113_cqbw/image02-frames/frame-${String(index + 1).padStart(2, "0")}.png`
       );
       operatorAssets["char_290_vigna"].walk = "assets/operators/char_290_vigna/char_290_vigna-walk.png";
+      operatorAssets["char_290_vigna"].walkBob = true;
       operatorAssets["char_002_amiya"] = {
         walk: "assets/operators/amiya/Pasted Image.png",
         shop: "assets/operators/amiya/Pasted Image 2.png",
@@ -1093,6 +1096,7 @@
           const assets = enemy ? null : operatorAssets[definitionOf(unit).id];
           if (assets && game.phase === "battle") {
             const figure = node.querySelector(".battle-figure");
+            if (assets.walkBob) figure.classList.add("has-walk-bob");
             if (assets.walkFrames) {
               attachAnimatedArt(figure, assets.walkFrames, "battle-art walk-frame", "has-walk-art");
             } else {
@@ -1805,11 +1809,15 @@
         const combatants = [...fielded(), ...game.enemies].filter(alive);
         for (const unit of combatants) {
           unit.cooldown = Math.max(0, unit.cooldown - dt);
-          const { target, distance } = nearestEnemy(unit);
-          if (!target) continue;
           const node = game.nodeById.get(unit.uid);
+          const { target, distance } = nearestEnemy(unit);
+          if (!target) {
+            if (node) node.classList.remove("walking");
+            continue;
+          }
           if (node) node.classList.toggle("faces-left", target.x < unit.x);
           if (distance <= unit.range) {
+            if (node) node.classList.remove("walking");
             if (unit.cooldown <= 0) {
               const damage = unit.damageType === "arts"
                 ? unit.attack * (1 - target.resistance / 100)
@@ -1823,6 +1831,7 @@
             const travel = Math.min(distance - unit.range + .02, unit.moveSpeed * dt);
             unit.x += (target.x - unit.x) / distance * travel;
             unit.y += (target.y - unit.y) / distance * travel;
+            if (node) node.classList.toggle("walking", travel > 0);
           }
         }
         updateBattleNodes();
