@@ -483,7 +483,7 @@
         "kazimierz", "siracusa", "kjerag", "victoria"
       ]);
       const definitions = (window.operatorData?.length ? window.operatorData : starterDefinitions).filter(definition =>
-        [definition.race, definition.faction].some(value => value && allowedOperatorCategories.has(value.toLowerCase()))
+        definition.race && allowedOperatorCategories.has(definition.race.toLowerCase())
       );
       const operatorLooks = {
         amiya: { hair: "#775845", accent: "#d8cbb1", coat: "#52627a", inner: "#d6d3c4", trim: "#d7bf71", pants: "#343b48", feature: "ears" },
