@@ -30,3 +30,4 @@ Room codes are temporary and multiplayer is intended for casual play with friend
 ## GitHub Pages
 
 In the repository settings, open **Pages**, choose the branch and root folder to publish, and save. The game is a static HTML/JavaScript site, so no build step is required.
+link:https://kpalollis.github.io/try-game/arknights-tactics.html
