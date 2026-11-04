@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="el">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -65,6 +65,15 @@
     .overline { margin: 0 0 5px; color: var(--acid); font-size: 10px; text-transform: uppercase; }
     h1 { margin: 0; font-size: clamp(24px, 3vw, 36px); line-height: 1; font-weight: 700; }
     .title-note { max-width: 320px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; text-align: right; }
+
+    .multiplayer-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 9px 16px; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); background: #202923b8; }
+    .multiplayer-title { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
+    .multiplayer-help, .multiplayer-status { margin: 4px 0 0; color: var(--muted); font: 10px "Courier New", monospace; line-height: 1.5; }
+    .multiplayer-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; }
+    .room-input { width: 145px; min-height: 29px; padding: 0 8px; border: 1px solid var(--line); background: #171d19; color: var(--ink); font: 10px "Courier New", monospace; text-transform: uppercase; }
+    .room-input:focus-visible { outline: 2px solid var(--acid); outline-offset: 2px; }
+    .multiplayer-status { grid-column: 1 / -1; margin: 0; }
+    .multiplayer-status[data-error="true"] { color: #f4977f; }
 
     .workbench { display: grid; grid-template-columns: minmax(0, 1fr) 278px; align-items: start; gap: 22px; }
     .main-column { min-width: 0; }
@@ -346,6 +355,9 @@
       .resource-label { font-size: 8px; }
       .title-row { align-items: flex-start; }
       .title-note { max-width: 130px; font-size: 10px; }
+      .multiplayer-panel { grid-template-columns: 1fr; }
+      .multiplayer-controls { justify-content: flex-start; }
+      .room-input { flex: 1 1 120px; }
       .battlefield { min-height: 300px; aspect-ratio: 1.08; }
       .unit-chip { width: calc(100% / 7 - 4px); height: calc(25% - 6px); gap: 2px; }
       .unit-chip.combat-sprite { width: 36px; height: 70px; }
@@ -373,66 +385,83 @@
         <div class="brand-mark" aria-hidden="true">RI</div>
         <div class="brand-copy"><strong>RHODES ISLAND</strong><span>Operator deployment interface</span></div>
       </div>
-      <div class="resources" aria-label="Πόροι αποστολής">
+      <div class="resources" aria-label="Mission resources">
         <div class="resource"><span class="resource-icon" aria-hidden="true">◈</span><span><span class="resource-label">LMD</span><strong class="resource-value" id="gold">10</strong></span></div>
-        <div class="resource health"><span class="resource-icon" aria-hidden="true">♥</span><span><span class="resource-label">Integrity</span><strong class="resource-value" id="integrity">100</strong></span></div>
+        <div class="resource health"><span class="resource-icon" aria-hidden="true">♥</span><span><span class="resource-label">Life Points</span><strong class="resource-value" id="life-points">100</strong></span></div>
       </div>
     </header>
 
     <div class="title-row">
-      <div><p class="overline">Tactical simulation · Rhodes Island</p><h1>Πεδίο ανάπτυξης</h1></div>
-      <p class="title-note">Στήσε την ομάδα σου. Οι operators αναλαμβάνουν τη μάχη.</p>
+      <div><p class="overline">Tactical simulation · Rhodes Island</p><h1>Deployment Zone</h1></div>
+      <p class="title-note">Build your squad. Your operators will take the fight.</p>
     </div>
 
+    <section class="multiplayer-panel" aria-label="Online multiplayer">
+      <div>
+        <h2 class="multiplayer-title">Online 1v1</h2>
+        <p class="multiplayer-help">Create a room and share its invite link, or enter a friend's room code.</p>
+      </div>
+      <div class="multiplayer-controls">
+        <button class="button compact" id="create-room">Create Room</button>
+        <input class="room-input" id="room-code" maxlength="16" placeholder="ROOM CODE" aria-label="Room code">
+        <button class="button compact" id="join-room">Join Room</button>
+        <button class="button compact" id="copy-invite" disabled>Copy Invite</button>
+        <button class="button compact danger" id="leave-room" hidden>Leave Room</button>
+      </div>
+      <p class="multiplayer-status" id="multiplayer-status" role="status">Single-player · Add Supabase settings to enable online rooms.</p>
+    </section>
+
     <div class="workbench">
-      <section class="main-column" aria-label="Πεδίο μάχης και κατάστημα">
-        <div class="section-heading"><h2>Πεδίο μάχης <span class="stage" id="round">Γύρος 1</span></h2><small id="phase-label">ΦΑΣΗ ΠΡΟΕΤΟΙΜΑΣΙΑΣ</small></div>
-        <div class="battlefield" id="battlefield" aria-label="Τακτικό πλέγμα">
+      <section class="main-column" aria-label="Battlefield and shop">
+        <div class="section-heading"><h2>Battlefield <span class="stage" id="round">Round 1</span></h2><small id="phase-label">PREPARATION PHASE</small></div>
+        <div class="battlefield" id="battlefield" aria-label="Tactical grid">
           <div class="tile-grid" id="tile-grid"></div>
-          <span class="zone-label enemy">ΕΧΘΡΙΚΗ ΖΩΝΗ</span><span class="zone-label home">ΖΩΝΗ ΑΝΑΠΤΥΞΗΣ</span>
+          <span class="zone-label enemy">ENEMY ZONE</span><span class="zone-label home">DEPLOYMENT ZONE</span>
           <div class="midline"></div>
           <div class="token-layer" id="token-layer"></div>
         </div>
 
-        <section class="bench-area" aria-label="Εφεδρεία operators">
-          <div class="bench-header"><h2>Εφεδρεία</h2><span class="bench-caption"><span class="bench-count" id="bench-count">0</span> / 8 θέσεις · ενεργοί <span id="field-count">0</span> / <span id="unit-cap">3</span></span></div>
+        <section class="bench-area" aria-label="Operator bench">
+          <div class="bench-header"><h2>Bench</h2><span class="bench-caption"><span class="bench-count" id="bench-count">0</span> / 8 slots · deployed <span id="field-count">0</span> / <span id="unit-cap">3</span></span></div>
           <div class="bench" id="bench"></div>
         </section>
 
-        <section class="shop-area" aria-label="Κατάστημα operators">
+        <section class="shop-area" aria-label="Operator shop">
           <div class="section-heading shop-heading">
-            <div class="shop-heading-copy"><h2>Διαθέσιμοι operators</h2><small id="shop-odds"></small><small>Ξεκλείδωμα: Tier 1 Lv.1 · Tier 2 Lv.3 · Tier 3 Lv.5 · Tier 4 Lv.7</small></div>
+            <div class="shop-heading-copy"><h2>Available Operators</h2><small id="shop-odds"></small><small>Unlocks: Tier 1 Lv.1 · Tier 2 Lv.3 · Tier 3 Lv.5 · Tier 4 Lv.7</small></div>
             <div class="shop-controls">
-              <button class="button compact" id="reroll">Ανανέωση · 2 LMD</button>
-              <button class="button compact" id="buy-xp">Εκπαίδευση · 4 LMD</button>
-              <button class="button primary" id="fight">Έναρξη μάχης</button>
+              <button class="button compact" id="reroll">Reroll · 2 LMD</button>
+              <button class="button compact" id="buy-xp">Train · 4 LMD</button>
+              <button class="button primary" id="fight">Start Battle</button>
             </div>
           </div>
           <div class="shop" id="shop"></div>
         </section>
       </section>
 
-      <aside class="intel" aria-label="Τακτικές πληροφορίες">
+      <aside class="intel" aria-label="Tactical intel">
         <section class="intel-section">
-          <h2 class="intel-title">Συνέργειες <span class="squad-count" id="synergy-count">0</span></h2>
+          <h2 class="intel-title">Synergies <span class="squad-count" id="synergy-count">0</span></h2>
           <div class="trait-list" id="traits"></div>
         </section>
         <section class="intel-section">
           <h2 class="intel-title">Operator</h2>
-          <div class="selected-info" id="selected-info"><p class="empty-note">Επίλεξε operator από την εφεδρεία ή το πεδίο.</p></div>
+          <div class="selected-info" id="selected-info"><p class="empty-note">Select an operator from the bench or battlefield.</p></div>
         </section>
         <section class="intel-section">
-          <h2 class="intel-title">Αναφορά αποστολής <span class="stage" id="level">LV. 3</span></h2>
-          <p class="report" id="report">Αγόρασε operators, τοποθέτησέ τους στη ζώνη ανάπτυξης και ξεκίνα τη μάχη.</p>
+          <h2 class="intel-title">Mission Report <span class="stage" id="level">LV. 1</span></h2>
+          <p class="report" id="report">Buy operators, deploy them in your zone, and start the battle.</p>
           <div class="round-progress"><span id="xp-progress"></span></div>
         </section>
       </aside>
     </div>
 
-    <footer class="bottom-note"><span><strong>Έλεγχος:</strong> επίλεξε operator και μετά κενό κελί για ανάπτυξη ή μετακίνηση.</span><span>Max Elite + Trust · δεδομένα: <a href="https://github.com/Kengxxiao/ArknightsGameData" target="_blank" rel="noreferrer">ArknightsGameData</a></span></footer>
+    <footer class="bottom-note"><span><strong>Controls:</strong> Select an operator, then an empty tile to deploy or move them.</span><span>Max Elite + Trust · data: <a href="https://github.com/Kengxxiao/ArknightsGameData" target="_blank" rel="noreferrer">ArknightsGameData</a></span></footer>
   </main>
 
   <script src="operators-data.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="multiplayer.js"></script>
   <script>
     (() => {
       const starterDefinitions = [
@@ -497,17 +526,17 @@
       if (definitions.some(definition => definition.id === "amiya")) operatorAssets.amiya = operatorAssets.amiya || operatorAssets["char_002_amiya"];
       const processedArt = new Map();
       const byId = Object.fromEntries(definitions.map(definition => [definition.id, definition]));
-      const roleNames = { Guard: "Φρουρός", Defender: "Αμυντικός", Sniper: "Ελεύθερος σκοπευτής", Caster: "Caster", Vanguard: "Vanguard", Medic: "Θεραπευτής", Specialist: "Ειδικός", Supporter: "Υποστηρικτής" };
+      const roleNames = { Guard: "Guard", Defender: "Defender", Sniper: "Sniper", Caster: "Caster", Vanguard: "Vanguard", Medic: "Medic", Specialist: "Specialist", Supporter: "Supporter" };
       const roleSigils = { Guard: "G", Defender: "D", Sniper: "S", Caster: "C", Vanguard: "V", Medic: "M", Specialist: "X", Supporter: "U" };
       const roleEffects = {
-        Guard: "2: +15% επίθεση · 4: +35%",
-        Defender: "2: +20% αντοχή · 4: +40%",
-        Sniper: "2: +1.0 εμβέλεια · 4: +1.5",
-        Caster: "2: +20% επίθεση · 4: +45%",
-        Vanguard: "2: +1 LMD στη νίκη",
-        Medic: "2: +15% αντοχή · 4: +30%",
-        Specialist: "2: +15% επίθεση · 4: +30%",
-        Supporter: "2: +1.0 εμβέλεια · 4: +1.5"
+        Guard: "2: +15% ATK · 4: +35%",
+        Defender: "2: +20% HP · 4: +40%",
+        Sniper: "2: +1.0 range · 4: +1.5",
+        Caster: "2: +20% ATK · 4: +45%",
+        Vanguard: "2: +1 LMD on victory",
+        Medic: "2: +15% HP · 4: +30%",
+        Specialist: "2: +15% ATK · 4: +30%",
+        Supporter: "2: +1.0 range · 4: +1.5"
       };
       const roles = ["Guard", "Defender", "Sniper", "Caster", "Vanguard", "Medic", "Specialist", "Supporter"];
       const raceBuffTypes = {
@@ -532,8 +561,8 @@
         health: "2: +12% HP · 3: +18% · 5: +25%",
         defense: "2: +12% DEF · 3: +20% · 5: +30%",
         resistance: "2: +5 RES · 3: +10 · 5: +15",
-        speed: "2: +10% ταχύτητα επίθεσης · 3: +18% · 5: +25%",
-        range: "2: +0.5 εμβέλεια · 3: +1.0 · 5: +1.5",
+        speed: "2: +10% attack speed · 3: +18% · 5: +25%",
+        range: "2: +0.5 range · 3: +1.0 · 5: +1.5",
         arts: "2: +10% ATK · +5 RES · 3: +18% · +10 RES · 5: +25% · +15 RES"
       };
       const maxBench = 8;
@@ -547,7 +576,13 @@
         bench: document.querySelector("#bench"),
         shop: document.querySelector("#shop"),
         gold: document.querySelector("#gold"),
-        integrity: document.querySelector("#integrity"),
+        lifePoints: document.querySelector("#life-points"),
+        createRoom: document.querySelector("#create-room"),
+        roomCode: document.querySelector("#room-code"),
+        joinRoom: document.querySelector("#join-room"),
+        copyInvite: document.querySelector("#copy-invite"),
+        leaveRoom: document.querySelector("#leave-room"),
+        multiplayerStatus: document.querySelector("#multiplayer-status"),
         round: document.querySelector("#round"),
         phase: document.querySelector("#phase-label"),
         benchCount: document.querySelector("#bench-count"),
@@ -567,9 +602,9 @@
 
       const game = {
         gold: 10,
-        integrity: 100,
+        lifePoints: 100,
         round: 1,
-        level: 3,
+        level: 1,
         xp: 0,
         phase: "prep",
         shop: [],
@@ -582,6 +617,14 @@
         vanguardBonus: 0,
         nodeById: new Map()
       };
+      const multiplayerState = {
+        connected: false,
+        playerCount: 0,
+        ready: false,
+        opponentReady: null,
+        battleId: null,
+        startingBattle: false
+      };
 
       const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
       const definitionOf = unit => unit.definition || byId[unit.type];
@@ -593,9 +636,10 @@
       const alive = unit => unit.hp > 0;
       const fielded = () => game.allies.filter(unit => unit.location === "board");
       const benched = () => game.allies.filter(unit => unit.location === "bench");
-      const xpTarget = () => game.level * 2;
+      const xpRequiredByLevel = [0, 6, 12, 18, 26, 34, 42];
+      const xpTarget = () => xpRequiredByLevel[game.level] || 0;
       const unitCap = () => game.level;
-      const operatorTier = definition => definition.rarity <= 2 ? 1 : definition.rarity <= 4 ? 2 : definition.rarity === 5 ? 3 : 4;
+      const operatorTier = definition => definition.rarity <= 3 ? 1 : definition.rarity === 4 ? 2 : definition.rarity === 5 ? 3 : 4;
       const unlockedOperatorTier = level => level >= 7 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
       const shopTierOdds = {
         1: [100, 0, 0, 0],
@@ -653,10 +697,10 @@
         game.shop = Array.from({ length: 5 }, randomShopType);
       }
 
-      function activeCounts() {
+      function activeCounts(team = fielded()) {
         const roleCounts = Object.fromEntries(roles.map(role => [role, 0]));
         const synergyCounts = {};
-        for (const unit of fielded()) {
+        for (const unit of team) {
           const definition = definitionOf(unit);
           roleCounts[definition.role]++;
           for (const synergy of synergiesOf(definition)) synergyCounts[synergy] = (synergyCounts[synergy] || 0) + 1;
@@ -699,8 +743,8 @@
         let defenseMultiplier = 1;
         let resistanceBonus = 0;
         let rateMultiplier = 1;
-        if (!isEnemy) {
-          const { roleCounts, synergyCounts } = activeCounts();
+        if (!isEnemy || unit.opponentId) {
+          const { roleCounts, synergyCounts } = activeCounts(isEnemy ? game.enemies : fielded());
           const bonus = roleBonus(definition, roleCounts);
           attackMultiplier *= bonus.attack || 1;
           hpMultiplier *= bonus.hp || 1;
@@ -738,7 +782,7 @@
             tile.className = `tile ${y < 2 ? "enemy-zone" : "home-zone"}`;
             tile.dataset.x = String(x);
             tile.dataset.y = String(y);
-            tile.setAttribute("aria-label", `Κελί ${x + 1}, ${y + 1}`);
+            tile.setAttribute("aria-label", `Tile ${x + 1}, ${y + 1}`);
             elements.tileGrid.append(tile);
           }
         }
@@ -746,8 +790,8 @@
 
       function portraitMarkup(definition, enemy = false) {
         if (enemy) {
-          const accent = { Guard: "#e88956", Defender: "#b4a77d", Sniper: "#e5c15f", Caster: "#bd8be0" }[definition.role] || "#e76d56";
-          const sigil = roleSigils[definition.role] || "!";
+          const accent = { raider: "#e88956", crawler: "#a9c45d", caster: "#bd8be0", drone: "#75c9d6", crusher: "#b4a77d" }[definition.enemyType] || "#e76d56";
+          const sigil = { raider: "R", crawler: "B", caster: "C", drone: "D", crusher: "H" }[definition.enemyType] || "!";
           return `<span class="portrait hostile-portrait"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 48c1-10 7-14 15-16h10c9 2 14 7 15 16" fill="#302726"/><path d="M14 31 9 23c-2-4-1-10 2-14l7-5h12l8 6 1 11-5 10-6 7H18z" fill="#171b19" stroke="#82776b" stroke-width="1.5"/><path d="M8 17 10 8l9-6h12l9 7 1 8-7-4-5 2-6-3-7 4z" fill="#55564b"/><path d="M12 17h24l-3 7-7 3h-7l-6-4z" fill="#171c1b" stroke="${accent}" stroke-width="1.5"/><path d="M17 20h5m5 0h5" stroke="${accent}" stroke-width="2"/><path d="m18 29 6 3 6-3" fill="none" stroke="#8e7261" stroke-width="2"/><path d="M5 40h38" stroke="${accent}" stroke-width="3"/></svg><span class="portrait-mark">${sigil}</span></span>`;
         }
 
@@ -767,8 +811,22 @@
       }
 
       function battleSpriteMarkup(definition, enemy = false) {
+        if (enemy && definition.enemyType === "crawler") {
+          return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="88" rx="18" ry="4" fill="#080c09" opacity=".55"/><path d="m20 63-10 13m17-10-2 15m15-15 2 15m4-18 10 13" fill="none" stroke="#718141" stroke-width="5" stroke-linecap="round"/><path d="M12 61c1-15 10-25 21-25s20 10 20 25c0 11-9 19-21 19S12 72 12 61z" fill="#70813e" stroke="#303b28" stroke-width="3"/><path d="m19 45-7-14 15 8m18 6 7-14-15 8" fill="#a5bb5a" stroke="#424b2d" stroke-width="3"/><path d="M21 57h7m8 0h7" stroke="#f4d777" stroke-width="4" stroke-linecap="round"/><path d="M24 68q8 5 16 0" fill="none" stroke="#303b28" stroke-width="2"/></svg></span>`;
+        }
+        if (enemy && definition.enemyType === "drone") {
+          return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="84" rx="17" ry="4" fill="#080c09" opacity=".55"/><path d="m23 44-15-9m33 9 15-9M23 58 8 68m33-10 15 10" stroke="#7eaeb1" stroke-width="4"/><circle cx="8" cy="34" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="56" cy="34" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="8" cy="69" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="56" cy="69" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><path d="m32 27 16 20-5 27H21l-5-27z" fill="#596b62" stroke="#252f2a" stroke-width="3"/><path d="m25 46 7-7 7 7-2 15h-10z" fill="#28342e" stroke="#8ed9dc" stroke-width="2"/><circle cx="32" cy="52" r="4" fill="#9ae8e6"/><path d="M27 74v8m10-8v8" stroke="#d7ed62" stroke-width="3"/></svg></span>`;
+        }
         const look = enemy
-          ? { hair: "#353a36", accent: "#d97159", feature: "helmet", coat: "#555b53", inner: "#39443d", trim: "#d8d9c8", pants: "#303833" }
+          ? {
+            hair: definition.enemyType === "caster" ? "#43364c" : "#353a36",
+            accent: definition.enemyType === "caster" ? "#bd8be0" : definition.enemyType === "crusher" ? "#b4a77d" : "#d97159",
+            feature: "helmet",
+            coat: definition.enemyType === "crusher" ? "#77735f" : "#555b53",
+            inner: "#39443d",
+            trim: "#d8d9c8",
+            pants: "#303833"
+          }
           : operatorLooks[definition.id] || { hair: "#81847c", accent: "#d7ed62", coat: "#525a53", inner: "#39443d", trim: "#d8d9c8", pants: "#303833", feature: "collar" };
         const roleWeapon = enemy
           ? `<path class="sprite-weapon" d="M47 54 61 48l-2 4 3 3-14 4z" fill="#77796d" stroke="#2b302d" stroke-width="1.5"/><path d="M54 52 59 51" stroke="#e88a68" stroke-width="1.5"/>`
@@ -924,9 +982,9 @@
             const definition = definitionOf(unit);
             button.dataset.uid = unit.uid;
             button.innerHTML = `${portraitMarkup(definition)}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role])}</span>${unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : ""}`;
-            button.setAttribute("aria-label", `${definition.name}, εφεδρεία`);
+            button.setAttribute("aria-label", `${definition.name}, bench`);
           } else {
-            button.setAttribute("aria-label", `Κενή θέση ${slot + 1}`);
+            button.setAttribute("aria-label", `Empty slot ${slot + 1}`);
             button.innerHTML = `<span aria-hidden="true">+</span>`;
           }
           if (unit) attachArt(button.querySelector(".portrait"), operatorAssets[definitionOf(unit).id]?.shop, "portrait-art", "has-shop-art");
@@ -942,8 +1000,8 @@
             emptyCard.type = "button";
             emptyCard.className = "shop-card shop-empty";
             emptyCard.disabled = true;
-            emptyCard.setAttribute("aria-label", "Κενή θέση shop");
-            emptyCard.innerHTML = `<span class="shop-empty-label">Κενό</span>`;
+            emptyCard.setAttribute("aria-label", "Empty shop slot");
+            emptyCard.innerHTML = `<span class="shop-empty-label">Empty</span>`;
             elements.shop.append(emptyCard);
             return;
           }
@@ -953,10 +1011,11 @@
           card.className = "shop-card";
           card.dataset.shopIndex = String(index);
           card.style.setProperty("--role-color", definition.color);
-          card.disabled = game.phase !== "prep" || game.gold < definition.cost || benched().length >= maxBench;
+          card.disabled = game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready ||
+            game.gold < definition.cost || benched().length >= maxBench;
           card.innerHTML = `<span class="shop-top">${portraitMarkup(definition)}<span class="tier-badge">Tier ${operatorTier(definition)}</span></span><span><span class="shop-name">${escapeHtml(definition.name)}</span><span class="shop-meta">E${definition.elite} Lv.${definition.level} · ${escapeHtml(roleNames[definition.role] || definition.role)}</span><span class="shop-base-stats">HP ${definition.hp} · ATK ${definition.attack}<br>DEF ${definition.defense} · RES ${definition.resistance}</span></span><span class="shop-cost">◈ ${definition.cost} LMD</span>`;
           attachArt(card.querySelector(".portrait"), operatorAssets[definition.id]?.shop, "portrait-art", "has-shop-art");
-          card.setAttribute("aria-label", `Αγόρασε ${definition.name}, ${definition.cost} LMD`);
+          card.setAttribute("aria-label", `Buy ${definition.name}, ${definition.cost} LMD`);
           elements.shop.append(card);
         });
       }
@@ -974,7 +1033,7 @@
         }
         elements.synergyCount.textContent = String(traits.filter(trait => trait.active).length).padStart(2, "0");
         if (!traits.length) {
-          elements.traits.innerHTML = `<p class="empty-note">Οι συνέργειες εμφανίζονται όταν αναπτυχθούν operators.</p>`;
+          elements.traits.innerHTML = `<p class="empty-note">Synergies appear when operators are deployed.</p>`;
           return;
         }
         elements.traits.innerHTML = traits.map(trait => `<div class="trait${trait.active ? " active" : ""}"><span class="trait-sigil">${trait.sigil}</span><span><span class="trait-name">${escapeHtml(trait.name)}</span><span class="trait-effect">${escapeHtml(trait.effect)}</span></span><span class="trait-count">${trait.count}</span></div>`).join("");
@@ -983,12 +1042,12 @@
       function renderSelected() {
         const unit = game.allies.find(item => item.uid === game.selected);
         if (!unit) {
-          elements.selectedInfo.innerHTML = `<p class="empty-note">Επίλεξε operator από την εφεδρεία ή το πεδίο.</p>`;
+          elements.selectedInfo.innerHTML = `<p class="empty-note">Select an operator from the bench or battlefield.</p>`;
           return;
         }
         const definition = definitionOf(unit);
-        const location = unit.location === "board" ? "ΣΤΟ ΠΕΔΙΟ" : "ΕΦΕΔΡΕΙΑ";
-        elements.selectedInfo.innerHTML = `<div class="selected-top">${portraitMarkup(definition)}<span><h3 class="selected-name">${escapeHtml(definition.name)}${unit.rank > 1 ? ` R${unit.rank}` : ""}</h3><p class="selected-sub">E${definition.elite} Lv.${definition.level} · ${escapeHtml(roleNames[definition.role] || definition.role)} · ${location}</p></span></div><p class="selected-lore"><strong>Φυλή</strong> ${escapeHtml(definition.race)}</p><div class="selected-stats"><span>HP <strong>${Math.round(definition.hp * (1 + (unit.rank - 1) * .65))}</strong></span><span>ATK <strong>${Math.round(definition.attack * (1 + (unit.rank - 1) * .65))}</strong></span><span>DEF <strong>${definition.defense}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>ΚΟΣΤΟΣ <strong>${definition.cost}</strong></span></div><div class="selected-actions"><button class="button compact" id="recall">${unit.location === "board" ? "Επιστροφή" : "Ανάπτυξη"}</button><button class="button compact danger" id="sell">Πώληση · ${Math.max(1, definition.cost * unit.rank)} LMD</button></div>`;
+        const location = unit.location === "board" ? "DEPLOYED" : "BENCH";
+        elements.selectedInfo.innerHTML = `<div class="selected-top">${portraitMarkup(definition)}<span><h3 class="selected-name">${escapeHtml(definition.name)}${unit.rank > 1 ? ` R${unit.rank}` : ""}</h3><p class="selected-sub">E${definition.elite} Lv.${definition.level} · ${escapeHtml(roleNames[definition.role] || definition.role)} · ${location}</p></span></div><p class="selected-lore"><strong>Race</strong> ${escapeHtml(definition.race)}</p><div class="selected-stats"><span>HP <strong>${Math.round(definition.hp * (1 + (unit.rank - 1) * .65))}</strong></span><span>ATK <strong>${Math.round(definition.attack * (1 + (unit.rank - 1) * .65))}</strong></span><span>DEF <strong>${definition.defense}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>COST <strong>${definition.cost}</strong></span></div><div class="selected-actions"><button class="button compact" id="recall">${unit.location === "board" ? "Recall" : "Deploy"}</button><button class="button compact danger" id="sell">Sell · ${Math.max(1, definition.cost * unit.rank)} LMD</button></div>`;
         const formatStat = value => new Intl.NumberFormat("en-US").format(value);
         elements.selectedInfo.querySelector(".selected-sub").textContent = `Tier ${operatorTier(definition)} · E${definition.elite} Lv.${definition.level} · DP ${definition.dpCost} · ${location}`;
         elements.selectedInfo.querySelector(".selected-stats").innerHTML = `<span>HP <strong>${formatStat(definition.hp)}</strong></span><span>ATK <strong>${formatStat(definition.attack)}</strong></span><span>DEF <strong>${formatStat(definition.defense)}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>INTERVAL <strong>${definition.interval.toFixed(2)}s</strong></span>`;
@@ -999,19 +1058,27 @@
 
       function render() {
         elements.gold.textContent = String(game.gold);
-        elements.integrity.textContent = String(game.integrity);
-        elements.round.textContent = `Γύρος ${game.round}`;
-        elements.phase.textContent = game.phase === "battle" ? "ΦΑΣΗ ΜΑΧΗΣ" : game.phase === "gameover" ? "ΑΠΟΣΤΟΛΗ ΤΕΛΟΣ" : "ΦΑΣΗ ΠΡΟΕΤΟΙΜΑΣΙΑΣ";
+        elements.lifePoints.textContent = String(game.lifePoints);
+        elements.round.textContent = `Round ${game.round}`;
+        elements.phase.textContent = game.phase === "battle" ? "BATTLE PHASE" :
+          game.phase === "awaiting-result" ? "AWAITING HOST" :
+            game.phase === "gameover" ? "MISSION OVER" : "PREPARATION PHASE";
         elements.benchCount.textContent = String(benched().length);
         elements.fieldCount.textContent = String(fielded().length);
         elements.unitCap.textContent = String(unitCap());
-        elements.level.textContent = `LV. ${game.level} · T${unlockedOperatorTier(game.level)} · XP ${game.xp}/${xpTarget()}`;
-        elements.shopOdds.textContent = `Πιθανότητες: ${effectiveShopOdds().map(({ tier, chance }) => `T${tier} ${Math.round(chance * 100)}%`).join(" · ")}`;
-        elements.xpProgress.style.width = `${Math.min(100, game.xp / xpTarget() * 100)}%`;
-        elements.reroll.disabled = game.phase !== "prep" || game.gold < 2;
-        elements.buyXp.disabled = game.phase !== "prep" || game.gold < 4 || game.level >= 7;
-        elements.fight.disabled = (game.phase !== "prep" && game.phase !== "gameover") || (game.phase === "prep" && fielded().length === 0);
-        elements.fight.textContent = game.phase === "gameover" ? "Νέο παιχνίδι" : game.phase === "battle" ? "Μάχη σε εξέλιξη" : "Έναρξη μάχης";
+        elements.level.textContent = `LV. ${game.level} · T${unlockedOperatorTier(game.level)} · ${xpTarget() ? `XP ${game.xp}/${xpTarget()}` : "MAX LEVEL"}`;
+        elements.shopOdds.textContent = `Shop odds: ${effectiveShopOdds().map(({ tier, chance }) => `T${tier} ${Math.round(chance * 100)}%`).join(" · ")}`;
+        elements.xpProgress.style.width = `${xpTarget() ? Math.min(100, game.xp / xpTarget() * 100) : 100}%`;
+        const planningLocked = game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready;
+        elements.reroll.disabled = planningLocked || game.gold < 2;
+        elements.buyXp.disabled = planningLocked || game.gold < 4 || game.level >= 7;
+        elements.fight.disabled = multiplayerState.startingBattle ||
+          multiplayerState.connected && (game.phase === "awaiting-result" || game.phase === "prep" && !multiplayerState.ready && fielded().length === 0) ||
+          !multiplayerState.connected && ((game.phase !== "prep" && game.phase !== "gameover") || (game.phase === "prep" && fielded().length === 0));
+        elements.fight.textContent = game.phase === "gameover" ? "New Game" :
+          game.phase === "battle" ? "Battle in Progress" :
+            game.phase === "awaiting-result" ? "Waiting for Result" :
+              multiplayerState.connected ? multiplayerState.ready ? "Cancel Ready" : "Ready for Battle" : "Start Battle";
         renderBoardTokens();
         renderBench();
         renderShop();
@@ -1023,6 +1090,276 @@
         elements.report.textContent = message;
       }
 
+      function setMultiplayerStatus(message, isError = false) {
+        elements.multiplayerStatus.textContent = message;
+        elements.multiplayerStatus.dataset.error = String(isError);
+      }
+
+      function handleRoomStatus(status) {
+        const wasConnected = multiplayerState.connected;
+        multiplayerState.connected = status.connected;
+        multiplayerState.playerCount = status.players;
+        elements.createRoom.hidden = status.connected;
+        elements.roomCode.hidden = status.connected;
+        elements.joinRoom.hidden = status.connected;
+        elements.copyInvite.disabled = !status.connected || !status.isHost;
+        elements.leaveRoom.hidden = !status.connected;
+        if (status.roomCode) elements.roomCode.value = status.roomCode;
+        if (status.error) {
+          setMultiplayerStatus(status.error, true);
+        } else if (status.connected) {
+          const roleName = status.isHost ? "Host" : "Guest";
+          setMultiplayerStatus(`${roleName} · Room ${status.roomCode} · ${status.players}/2 players${status.opponentId ? " · Opponent connected" : " · Waiting for opponent"}`);
+          if (wasConnected && status.players < 2) {
+            multiplayerState.ready = false;
+            multiplayerState.opponentReady = null;
+            multiplayerState.battleId = null;
+            if (game.phase === "battle" || game.phase === "awaiting-result") {
+              game.phase = "prep";
+              game.enemies = [];
+              for (const unit of fielded()) {
+                unit.x = unit.homeX;
+                unit.y = unit.homeY;
+                unit.hp = 0;
+              }
+              setReport("Your opponent left the room. Battle canceled; waiting for another player.");
+            }
+            render();
+          }
+          if (!wasConnected && game.phase === "prep") {
+            multiplayerState.ready = false;
+            multiplayerState.opponentReady = null;
+            game.enemies = [];
+            render();
+          }
+        } else {
+          setMultiplayerStatus(wasConnected
+            ? "Disconnected · Single-player mode is active."
+            : "Single-player · Add Supabase settings to enable online rooms.");
+          multiplayerState.ready = false;
+          multiplayerState.opponentReady = null;
+          multiplayerState.battleId = null;
+          if (wasConnected && (game.phase === "battle" || game.phase === "awaiting-result")) {
+            game.phase = "prep";
+            game.enemies = makeEnemyWave();
+            for (const unit of fielded()) {
+              unit.x = unit.homeX;
+              unit.y = unit.homeY;
+              unit.hp = 0;
+            }
+            setReport("Multiplayer connection ended. Battle canceled; single-player mode is active.");
+            render();
+          }
+        }
+      }
+
+      async function sendRoomMessage(type, data) {
+        try {
+          await window.multiplayerClient.send(type, data);
+          return true;
+        } catch (error) {
+          setMultiplayerStatus(error.message, true);
+          setReport(`Multiplayer error: ${error.message}`);
+          return false;
+        }
+      }
+
+      function localTeamSnapshot() {
+        return {
+          round: game.round,
+          level: game.level,
+          units: fielded().map(unit => ({
+            type: unit.type,
+            rank: unit.rank,
+            x: unit.x,
+            y: unit.y
+          }))
+        };
+      }
+
+      function validTeamSnapshot(snapshot) {
+        if (!snapshot || snapshot.round !== game.round || !Array.isArray(snapshot.units) || snapshot.units.length === 0 || snapshot.units.length > 7) return false;
+        const occupied = new Set();
+        return snapshot.units.every(unit => {
+          if (!byId[unit.type] || !Number.isInteger(unit.rank) || unit.rank < 1 || unit.rank > 3 ||
+              !Number.isInteger(unit.x) || unit.x < 0 || unit.x >= gridWidth ||
+              !Number.isInteger(unit.y) || unit.y < 2 || unit.y > 3) return false;
+          const position = `${unit.x},${unit.y}`;
+          if (occupied.has(position)) return false;
+          occupied.add(position);
+          return true;
+        });
+      }
+
+      function makeOpponentUnits(snapshot, playerId) {
+        if (!validTeamSnapshot(snapshot)) throw new Error("The opponent sent an invalid team for this round.");
+        return snapshot.units.map((unit, index) => {
+          const definition = byId[unit.type];
+          return {
+            uid: `opponent-${index}`,
+            type: unit.type,
+            definition,
+            team: "enemy",
+            location: "board",
+            x: gridWidth - 1 - unit.x,
+            y: 3 - unit.y,
+            rank: unit.rank,
+            hp: 0,
+            maxHp: 0,
+            dead: false,
+            opponentId: playerId
+          };
+        });
+      }
+
+      async function toggleMultiplayerReady() {
+        if (game.phase !== "prep" || multiplayerState.startingBattle) return;
+        if (multiplayerState.ready) {
+          multiplayerState.ready = false;
+          multiplayerState.opponentReady = null;
+          await sendRoomMessage("unready", { round: game.round });
+          setReport("Ready canceled. Adjust your formation before readying up again.");
+          render();
+          return;
+        }
+        if (multiplayerState.connected && multiplayerState.playerCount < 2) {
+          setReport("Waiting for a friend to join the room before battling.");
+          return;
+        }
+        if (!fielded().length) {
+          setReport("Deploy at least one operator before readying up.");
+          return;
+        }
+        multiplayerState.ready = true;
+        if (!await sendRoomMessage("ready", localTeamSnapshot())) {
+          multiplayerState.ready = false;
+          render();
+          return;
+        }
+        setReport("Formation locked. Waiting for your opponent to ready up.");
+        render();
+        await tryStartMultiplayerBattle();
+      }
+
+      async function tryStartMultiplayerBattle() {
+        if (!window.multiplayerClient.isHost || !multiplayerState.ready || !multiplayerState.opponentReady ||
+            multiplayerState.startingBattle || game.phase !== "prep") return;
+        const opponentId = multiplayerState.opponentReady.playerId;
+        if (!opponentId || !validTeamSnapshot(multiplayerState.opponentReady.snapshot)) {
+          setReport("Your opponent's team could not be verified. Ask them to ready up again.");
+          return;
+        }
+        const playerId = window.multiplayerClient.playerId;
+        const battleId = crypto.randomUUID();
+        multiplayerState.startingBattle = true;
+        multiplayerState.battleId = battleId;
+        game.enemies = makeOpponentUnits(multiplayerState.opponentReady.snapshot, opponentId);
+        try {
+          await window.multiplayerClient.send("battle-start", {
+            round: game.round,
+            battleId,
+            hostId: playerId,
+            guestId: opponentId,
+            teams: {
+              [playerId]: localTeamSnapshot(),
+              [opponentId]: multiplayerState.opponentReady.snapshot
+            }
+          });
+          multiplayerState.startingBattle = false;
+          startBattle();
+        } catch (error) {
+          multiplayerState.startingBattle = false;
+          multiplayerState.battleId = null;
+          game.enemies = [];
+          setMultiplayerStatus(error.message, true);
+          setReport(`Unable to start multiplayer battle: ${error.message}`);
+          render();
+        }
+      }
+
+      function handleMultiplayerMessage(type, data, from) {
+        if (!window.multiplayerClient.connected || from === window.multiplayerClient.playerId) return;
+        if (type === "hello") {
+          if (multiplayerState.ready) void sendRoomMessage("ready", localTeamSnapshot());
+          return;
+        }
+        if (type === "ready") {
+          if (game.phase !== "prep" || !validTeamSnapshot(data)) {
+            void sendRoomMessage("unready", { round: game.round });
+            return;
+          }
+          if (window.multiplayerClient.opponentId && from !== window.multiplayerClient.opponentId) return;
+          multiplayerState.opponentReady = { playerId: from, snapshot: data };
+          setReport("Your opponent is ready. Starting the battle when both formations are locked.");
+          render();
+          void tryStartMultiplayerBattle();
+          return;
+        }
+        if (type === "unready") {
+          if (data?.round === game.round) {
+            multiplayerState.opponentReady = null;
+            setReport("Your opponent is changing their formation.");
+            render();
+          }
+          return;
+        }
+        if (type === "battle-start") {
+          if (window.multiplayerClient.isHost || data?.round !== game.round || data?.guestId !== window.multiplayerClient.playerId ||
+              data?.hostId !== from || typeof data.battleId !== "string" ||
+              !validTeamSnapshot(data.teams?.[from]) ||
+              !validTeamSnapshot(data.teams?.[window.multiplayerClient.playerId])) return;
+          multiplayerState.battleId = data.battleId;
+          multiplayerState.ready = true;
+          multiplayerState.opponentReady = null;
+          game.enemies = makeOpponentUnits(data.teams[from], from);
+          startBattle();
+          return;
+        }
+        if (type === "match-result") {
+          if (window.multiplayerClient.isHost || data?.round !== game.round ||
+              data?.battleId !== multiplayerState.battleId || data?.winnerId !== from ||
+              !Number.isInteger(data.survivingUnits) || data.survivingUnits < 0 ||
+              game.phase !== "battle" && game.phase !== "awaiting-result") return;
+          resolveBattle(data.winnerId === window.multiplayerClient.playerId, {
+            survivingUnits: data.survivingUnits
+          });
+        }
+      }
+
+      async function connectToRoom(create) {
+        elements.createRoom.disabled = true;
+        elements.joinRoom.disabled = true;
+        try {
+          if (create) {
+            const code = await window.multiplayerClient.createRoom();
+            elements.roomCode.value = code;
+            setMultiplayerStatus(`Room created · ${code}. Copy the invite link and send it to your friend.`);
+          } else {
+            const code = elements.roomCode.value.trim().toUpperCase();
+            await window.multiplayerClient.joinRoom(code);
+            setMultiplayerStatus(`Joined room ${code}. Waiting for the host to start the match.`);
+          }
+        } catch (error) {
+          setMultiplayerStatus(error.message, true);
+          setReport(`Multiplayer connection failed: ${error.message}`);
+        } finally {
+          elements.createRoom.disabled = false;
+          elements.joinRoom.disabled = false;
+        }
+      }
+
+      async function copyInviteLink() {
+        if (!window.multiplayerClient.connected || !window.multiplayerClient.isHost) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set("room", window.multiplayerClient.roomCode);
+        try {
+          await navigator.clipboard.writeText(url.href);
+          setMultiplayerStatus(`Invite link copied · Room ${window.multiplayerClient.roomCode}.`);
+        } catch (error) {
+          setMultiplayerStatus(`Unable to copy the invite link: ${error.message}`, true);
+        }
+      }
+
       function emptyBenchSlot() {
         const occupied = new Set(benched().map(unit => unit.slot));
         for (let slot = 0; slot < maxBench; slot++) if (!occupied.has(slot)) return slot;
@@ -1030,14 +1367,14 @@
       }
 
       function buyOperator(index) {
-        if (game.phase !== "prep") return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const definition = byId[game.shop[index]];
         if (!definition || game.gold < definition.cost || benched().length >= maxBench) return;
         game.gold -= definition.cost;
         game.shop[index] = null;
         game.allies.push(makeUnit(definition.id, "bench", emptyBenchSlot()));
         const merged = mergeCopies(definition.id);
-        setReport(merged ? `${definition.name}: οι operators συγχωνεύτηκαν και αναβαθμίστηκαν.` : `${definition.name} εντάχθηκε στην εφεδρεία.`);
+        setReport(merged ? `${definition.name}: three operators merged and ranked up.` : `${definition.name} joined the bench.`);
         render();
       }
 
@@ -1059,54 +1396,61 @@
       }
 
       function reroll() {
-        if (game.phase !== "prep" || game.gold < 2) return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 2) return;
         game.gold -= 2;
         rollShop();
-        setReport("Νέοι operators διαθέσιμοι στο κατάστημα.");
+        setReport("New operators are available in the shop.");
         render();
       }
 
       function buyXp() {
-        if (game.phase !== "prep" || game.gold < 4 || game.level >= 7) return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 4 || game.level >= 7) return;
         game.gold -= 4;
-        game.xp += 4;
+        const progress = grantXp(4);
+        if (progress.levelsGained) rollShop();
+        const tierMessage = progress.tierUnlocked ? ` Tier ${progress.currentTier} operators unlocked.` : "";
+        setReport(`Training complete. +4 XP.${tierMessage} Level ${game.level} · deployment limit: ${unitCap()}.`);
+        render();
+      }
+
+      function grantXp(amount) {
+        const previousLevel = game.level;
         const previousTier = unlockedOperatorTier(game.level);
+        game.xp += amount;
         while (game.level < 7 && game.xp >= xpTarget()) {
           game.xp -= xpTarget();
           game.level++;
         }
-        const currentTier = unlockedOperatorTier(game.level);
-        if (currentTier > previousTier) {
-          rollShop();
-          setReport(`Ξεκλειδώθηκε Tier ${currentTier} operators. Όριο ανάπτυξης: ${unitCap()}.`);
-        } else {
-          setReport(`Εκπαίδευση ολοκληρώθηκε. Όριο ανάπτυξης: ${unitCap()}.`);
-        }
-        render();
+        return {
+          levelsGained: game.level - previousLevel,
+          tierUnlocked: unlockedOperatorTier(game.level) > previousTier,
+          currentTier: unlockedOperatorTier(game.level)
+        };
       }
 
       function placeOnBoard(unit, x, y) {
+        if (multiplayerState.connected && multiplayerState.ready) return false;
         if (y < 2 || y > 3) {
-          setReport("Οι operators αναπτύσσονται μόνο στις δύο κάτω σειρές.");
+          setReport("Operators can only be deployed in the bottom two rows.");
           return false;
         }
         const occupant = fielded().find(other => other.x === x && other.y === y && other.uid !== unit.uid);
         if (occupant) return false;
         if (unit.location === "bench" && fielded().length >= unitCap()) {
-          setReport(`Αναβάθμισε το επίπεδο για να αναπτύξεις πάνω από ${unitCap()} operators.`);
+          setReport(`Level up to deploy more than ${unitCap()} operators.`);
           return false;
         }
         unit.location = "board";
         unit.x = x;
         unit.y = y;
         game.selected = null;
-        setReport(`${definitionOf(unit).name} αναπτύχθηκε στο πεδίο.`);
+        setReport(`${definitionOf(unit).name} deployed to the battlefield.`);
         render();
         return true;
       }
 
       function handleTileClick(tile) {
-        if (game.phase !== "prep" || !game.selected) return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || !game.selected) return;
         const unit = game.allies.find(item => item.uid === game.selected);
         if (!unit) return;
         const x = Number(tile.dataset.x);
@@ -1124,13 +1468,13 @@
           unit.x = x;
           unit.y = y;
           game.selected = null;
-          setReport("Οι θέσεις των operators άλλαξαν.");
+          setReport("Operator positions swapped.");
           render();
         }
       }
 
       function handleUnitClick(uid) {
-        if (game.phase !== "prep") return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const unit = game.allies.find(item => item.uid === uid);
         if (!unit) return;
         if (game.selected && game.selected !== uid) {
@@ -1143,7 +1487,7 @@
             unit.location = "bench";
             unit.slot = slot;
             game.selected = null;
-            setReport("Οι operators αντάλλαξαν θέσεις.");
+            setReport("Operators swapped positions.");
             render();
             return;
           }
@@ -1155,7 +1499,7 @@
             unit.x = x;
             unit.y = y;
             game.selected = null;
-            setReport("Οι operators αντάλλαξαν θέσεις.");
+            setReport("Operators swapped positions.");
             render();
             return;
           }
@@ -1165,7 +1509,7 @@
       }
 
       function handleBenchSlot(slot, uid) {
-        if (game.phase !== "prep") return;
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         if (uid) {
           handleUnitClick(uid);
           return;
@@ -1175,19 +1519,19 @@
         selected.location = "bench";
         selected.slot = Number(slot);
         game.selected = null;
-        setReport(`${definitionOf(selected).name} επέστρεψε στην εφεδρεία.`);
+        setReport(`${definitionOf(selected).name} returned to the bench.`);
         render();
       }
 
       function recallSelected() {
         const unit = game.allies.find(item => item.uid === game.selected);
-        if (!unit || game.phase !== "prep") return;
+        if (!unit || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         if (unit.location === "bench") {
           const x = (fielded().length % gridWidth);
           const y = 3;
           const empty = fielded().find(other => other.x === x && other.y === y);
           if (empty) {
-            setReport("Επίλεξε κενό κελί για ανάπτυξη.");
+            setReport("Select an empty tile to deploy.");
             return;
           }
           placeOnBoard(unit, x, y);
@@ -1195,7 +1539,7 @@
         }
         const slot = emptyBenchSlot();
         if (slot < 0) {
-          setReport("Δεν υπάρχει ελεύθερη θέση στην εφεδρεία.");
+          setReport("No free bench slots.");
           return;
         }
         unit.location = "bench";
@@ -1206,37 +1550,45 @@
 
       function sellSelected() {
         const index = game.allies.findIndex(unit => unit.uid === game.selected);
-        if (index < 0 || game.phase !== "prep") return;
+        if (index < 0 || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const unit = game.allies[index];
         const value = Math.max(1, definitionOf(unit).cost * unit.rank);
         game.gold += value;
         game.allies.splice(index, 1);
         game.selected = null;
-        setReport(`${definitionOf(unit).name} αποσύρθηκε. +${value} LMD.`);
+        setReport(`${definitionOf(unit).name} sold. +${value} LMD.`);
         render();
       }
 
       function makeEnemy(index, count) {
-        const rolesForEnemy = ["Guard", "Defender", "Sniper", "Caster"];
-        const role = rolesForEnemy[(index + game.round) % rolesForEnemy.length];
+        const archetypes = [
+          { id: "raider", name: "Infected Raider", initials: "IR", role: "Guard", unlockRound: 1, hp: 690, attack: 118, defense: 58, resistance: 0, interval: 1.3, damageType: "physical", moveSpeed: .78, range: 1.15, color: "#e88956" },
+          { id: "crawler", name: "Corrupted Crawler", initials: "CC", role: "Guard", unlockRound: 1, hp: 410, attack: 82, defense: 28, resistance: 0, interval: .95, damageType: "physical", moveSpeed: 1.45, range: .9, color: "#a9c45d" },
+          { id: "caster", name: "Ritual Caster", initials: "RC", role: "Caster", unlockRound: 2, hp: 570, attack: 138, defense: 38, resistance: 25, interval: 1.55, damageType: "arts", moveSpeed: .62, range: 2.5, color: "#bd8be0" },
+          { id: "drone", name: "Recon Drone", initials: "RD", role: "Sniper", unlockRound: 3, hp: 460, attack: 108, defense: 34, resistance: 10, interval: 1.2, damageType: "physical", moveSpeed: .9, range: 2.7, color: "#75c9d6" },
+          { id: "crusher", name: "Armored Crusher", initials: "AC", role: "Defender", unlockRound: 4, hp: 1380, attack: 172, defense: 145, resistance: 5, interval: 1.5, damageType: "physical", moveSpeed: .48, range: 1.1, color: "#b4a77d" }
+        ];
+        const available = archetypes.filter(archetype => archetype.unlockRound <= game.round);
+        const archetype = available[(index + Math.floor((game.round - 1) / 2)) % available.length];
         const x = Math.round((index + .5) * gridWidth / count - .5);
         const y = index % 2;
         const definition = {
-          id: `target-${game.round}-${index}`,
-          name: `Target ${String(index + 1).padStart(2, "0")}`,
-          initials: "!",
-          role,
+          id: `${archetype.id}-${game.round}-${index}`,
+          enemyType: archetype.id,
+          name: archetype.name,
+          initials: archetype.initials,
+          role: archetype.role,
           faction: "Hostile",
           cost: 1,
-          hp: 720 + game.round * 90 + (role === "Defender" ? 350 : 0),
-          attack: 110 + game.round * 12 + (role === "Caster" ? 25 : 0),
-          defense: 55 + game.round * 7 + (role === "Defender" ? 90 : 0),
-          resistance: role === "Caster" ? 15 : 0,
-          interval: role === "Sniper" ? 1.5 : 1.3,
-          damageType: role === "Caster" ? "arts" : "physical",
-          moveSpeed: 1,
-          range: role === "Sniper" || role === "Caster" ? 2.5 : 1.15,
-          color: "var(--red)"
+          hp: archetype.hp + game.round * 55,
+          attack: archetype.attack + game.round * 9,
+          defense: archetype.defense + game.round * 5,
+          resistance: archetype.resistance,
+          interval: archetype.interval,
+          damageType: archetype.damageType,
+          moveSpeed: archetype.moveSpeed,
+          range: archetype.range,
+          color: archetype.color
         };
         return { uid: `enemy-${game.round}-${index}`, type: definition.id, definition, team: "enemy", location: "board", x, y, rank: 1, hp: 0, maxHp: 0 };
       }
@@ -1262,7 +1614,7 @@
         }
         for (const enemy of game.enemies) effectiveStats(enemy, true);
         game.vanguardBonus = activeCounts().roleCounts.Vanguard >= 2 ? 1 : 0;
-        setReport(`Μάχη ${game.round}: οι operators προχωρούν αυτόματα προς τους στόχους.`);
+        setReport(`Round ${game.round}: your operators automatically advance toward their targets.`);
         render();
         game.frameTime = performance.now();
         requestAnimationFrame(battleFrame);
@@ -1333,6 +1685,12 @@
         const alliesAlive = fielded().some(alive);
         const enemiesAlive = game.enemies.some(alive);
         if (!alliesAlive || !enemiesAlive || game.battleTime > 36) {
+          if (multiplayerState.connected && !window.multiplayerClient.isHost) {
+            game.phase = "awaiting-result";
+            setReport("Battle complete. Waiting for the room host to confirm the result.");
+            render();
+            return false;
+          }
           resolveBattle(alliesAlive && (!enemiesAlive || remainingHealth(fielded()) >= remainingHealth(game.enemies)));
           return false;
         }
@@ -1361,31 +1719,52 @@
         if (advanceBattle(dt)) requestAnimationFrame(battleFrame);
       }
 
-      function resolveBattle(victory) {
+      function resolveBattle(victory, multiplayerOutcome = null) {
         const roundEnded = game.round;
-        const damage = victory ? 0 : Math.max(1, game.enemies.filter(alive).length);
+        const remainingEnemies = game.enemies.filter(alive).length;
+        const winningUnits = multiplayerOutcome?.survivingUnits ??
+          (multiplayerState.connected ? (victory ? fielded() : game.enemies).filter(alive).length : remainingEnemies);
+        const damage = victory ? 0 : Math.max(1, 2 + Math.floor((roundEnded - 1) / 2) + winningUnits);
+        if (multiplayerState.connected && window.multiplayerClient.isHost && multiplayerState.battleId && !multiplayerOutcome) {
+          const winnerId = victory ? window.multiplayerClient.playerId : window.multiplayerClient.opponentId;
+          const survivingUnits = (victory ? fielded() : game.enemies).filter(alive).length;
+          void sendRoomMessage("match-result", {
+            round: roundEnded,
+            battleId: multiplayerState.battleId,
+            winnerId,
+            survivingUnits
+          });
+        }
         game.enemies = [];
         if (victory) {
           const reward = 5 + Math.floor(game.round / 3) + game.vanguardBonus;
           game.gold += reward;
-          setReport(`Νίκη στον γύρο ${roundEnded}. +${reward} LMD · οι operators ανασυντάσσονται.`);
+          const xpReward = game.level < 7 ? 3 : 0;
+          const progress = xpReward ? grantXp(xpReward) : null;
+          const xpMessage = progress
+            ? ` · +${xpReward} XP${progress.levelsGained ? ` · Level ${game.level}` : ""}${progress.tierUnlocked ? ` · Tier ${progress.currentTier} unlocked` : ""}`
+            : "";
+          setReport(`Victory in round ${roundEnded}. +${reward} LMD${xpMessage} · your operators regroup.`);
         } else {
-          game.integrity = Math.max(0, game.integrity - damage * 8);
+          game.lifePoints = Math.max(0, game.lifePoints - damage);
           game.gold += 3;
-          setReport(`Ήττα στον γύρο ${roundEnded}. -${damage * 8} integrity · +3 LMD.`);
+          setReport(`Defeat in round ${roundEnded}. -${damage} LP · +3 LMD.`);
         }
-        game.phase = game.integrity <= 0 ? "gameover" : "prep";
+        game.phase = game.lifePoints <= 0 ? "gameover" : "prep";
         if (game.phase === "gameover") {
-          elements.fight.textContent = "Νέο παιχνίδι";
-          setReport("Η αποστολή απέτυχε. Πάτησε «Νέο παιχνίδι» για νέα ανάπτυξη.");
+          elements.fight.textContent = "New Game";
+          setReport("You ran out of Life Points. Mission failed — press “New Game” to deploy again.");
         } else {
           game.round++;
+          multiplayerState.ready = false;
+          multiplayerState.opponentReady = null;
+          multiplayerState.battleId = null;
           for (const unit of fielded()) {
             unit.x = unit.homeX;
             unit.y = unit.homeY;
             unit.hp = 0;
           }
-          game.enemies = makeEnemyWave();
+          game.enemies = multiplayerState.connected ? [] : makeEnemyWave();
           rollShop();
         }
         render();
@@ -1393,16 +1772,16 @@
 
       function resetGame() {
         game.gold = 10;
-        game.integrity = 100;
+        game.lifePoints = 100;
         game.round = 1;
-        game.level = 3;
+        game.level = 1;
         game.xp = 0;
         game.phase = "prep";
         game.allies = [];
-        game.enemies = makeEnemyWave();
+        game.enemies = multiplayerState.connected ? [] : makeEnemyWave();
         game.selected = null;
         rollShop();
-        setReport("Αγόρασε operators, τοποθέτησέ τους στη ζώνη ανάπτυξης και ξεκίνα τη μάχη.");
+        setReport("Buy operators, deploy them in your zone, and start the battle.");
         render();
       }
 
@@ -1431,7 +1810,36 @@
       });
       elements.reroll.addEventListener("click", reroll);
       elements.buyXp.addEventListener("click", buyXp);
-      elements.fight.addEventListener("click", startBattle);
+      elements.createRoom.addEventListener("click", () => connectToRoom(true));
+      elements.joinRoom.addEventListener("click", () => connectToRoom(false));
+      elements.copyInvite.addEventListener("click", copyInviteLink);
+      elements.leaveRoom.addEventListener("click", async () => {
+        try {
+          await window.multiplayerClient.leave();
+          if (game.phase === "awaiting-result") {
+            game.phase = "prep";
+            for (const unit of fielded()) {
+              unit.x = unit.homeX;
+              unit.y = unit.homeY;
+              unit.hp = 0;
+            }
+          }
+          game.enemies = game.phase === "prep" ? makeEnemyWave() : game.enemies;
+          setReport("You left the multiplayer room. Single-player mode is active.");
+          render();
+        } catch (error) {
+          setMultiplayerStatus(`Unable to leave the room: ${error.message}`, true);
+        }
+      });
+      elements.fight.addEventListener("click", () => {
+        if (game.phase === "gameover") startBattle();
+        else if (multiplayerState.connected) void toggleMultiplayerReady();
+        else startBattle();
+      });
+
+      window.multiplayerClient.setHandlers(handleMultiplayerMessage, handleRoomStatus);
+      const inviteCode = new URLSearchParams(window.location.search).get("room");
+      if (inviteCode) elements.roomCode.value = inviteCode.trim().toUpperCase();
 
       renderTiles();
       rollShop();
