@@ -551,19 +551,20 @@
         Kjerag: "speed",
         Victoria: "defense"
       };
+      const raceTierThresholds = [2, 3, 5];
       const synergyNames = {
         yan: "Yan", sargon: "Sargon", laterano: "Laterano", liberi: "Liberi",
         sarkaz: "Sarkaz", aegir: "Aegir", egir: "Aegir", kazimierz: "Kazimierz",
         siracusa: "Siracusa", kjerag: "Kjerag", victoria: "Victoria"
       };
       const raceBuffEffects = {
-        attack: "2: +10% ATK · 3: +20% · 5: +25%",
-        health: "2: +12% HP · 3: +18% · 5: +25%",
-        defense: "2: +12% DEF · 3: +20% · 5: +30%",
-        resistance: "2: +5 RES · 3: +10 · 5: +15",
-        speed: "2: +10% attack speed · 3: +18% · 5: +25%",
-        range: "2: +0.5 range · 3: +1.0 · 5: +1.5",
-        arts: "2: +10% ATK · +5 RES · 3: +18% · +10 RES · 5: +25% · +15 RES"
+        attack: "T1 (2): +10% ATK · T2 (3): +20% · T3 (5): +25%",
+        health: "T1 (2): +12% HP · T2 (3): +18% · T3 (5): +25%",
+        defense: "T1 (2): +12% DEF · T2 (3): +20% · T3 (5): +30%",
+        resistance: "T1 (2): +5 RES · T2 (3): +10 · T3 (5): +15",
+        speed: "T1 (2): +10% attack speed · T2 (3): +18% · T3 (5): +25%",
+        range: "T1 (2): +0.5 range · T2 (3): +1.0 · T3 (5): +1.5",
+        arts: "T1 (2): +10% ATK · +5 RES · T2 (3): +18% · +10 RES · T3 (5): +25% · +15 RES"
       };
       const maxBench = 8;
       const gridWidth = 7;
@@ -639,7 +640,17 @@
       const xpRequiredByLevel = [0, 6, 12, 18, 26, 34, 42];
       const xpTarget = () => xpRequiredByLevel[game.level] || 0;
       const unitCap = () => game.level;
-      const operatorTier = definition => definition.rarity <= 3 ? 1 : definition.rarity === 4 ? 2 : definition.rarity === 5 ? 3 : 4;
+      const operatorTierOverrides = {
+        char_385_finlpp: 1,
+        char_4062_totter: 1,
+        char_126_shotst: 1,
+        char_190_clour: 1,
+        char_349_chiave: 2,
+        char_198_blackd: 1,
+        char_133_mm: 1
+      };
+      const operatorTier = definition => operatorTierOverrides[definition.id] ??
+        (definition.rarity <= 3 ? 1 : definition.rarity === 4 ? 2 : definition.rarity === 5 ? 3 : 4);
       const unlockedOperatorTier = level => level >= 7 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
       const shopTierOdds = {
         1: [100, 0, 0, 0],
@@ -655,19 +666,17 @@
         return { uid: String(game.nextId++), type, location, slot, x: 0, y: 0, rank, hp: 0, maxHp: 0, dead: false };
       }
 
-      function availableShopTiers() {
-        const maxCost = Math.min(3, 1 + Math.floor((game.round - 1) / 3));
+      function availableShopTiers(excludedTypes = new Set()) {
         return definitions.reduce((tiers, definition) => {
           const tier = operatorTier(definition);
-          if (definition.cost <= maxCost) {
+          if (!excludedTypes.has(definition.id)) {
             (tiers[tier] ||= []).push(definition);
           }
           return tiers;
         }, {});
       }
 
-      function effectiveShopOdds() {
-        const available = availableShopTiers();
+      function effectiveShopOdds(available = availableShopTiers()) {
         const odds = shopTierOdds[game.level];
         const availableTiers = Object.keys(available).map(tier => ({
           tier: Number(tier),
@@ -683,8 +692,8 @@
         return weightedTiers.map(tier => ({ ...tier, chance: tier.weight / effectiveTotal }));
       }
 
-      function randomShopType() {
-        const tiers = effectiveShopOdds();
+      function randomShopType(available) {
+        const tiers = effectiveShopOdds(available);
         let roll = Math.random() * tiers.reduce((total, tier) => total + tier.weight, 0);
         for (const tier of tiers) {
           roll -= tier.weight;
@@ -694,7 +703,20 @@
       }
 
       function rollShop() {
-        game.shop = Array.from({ length: 5 }, randomShopType);
+        const previousOffers = new Set(game.shop.filter(Boolean));
+        const selected = new Set();
+        const nextShop = [];
+        while (nextShop.length < 5) {
+          const remainingSlots = 5 - nextShop.length;
+          const novelTypes = new Set([...previousOffers, ...selected]);
+          let available = availableShopTiers(novelTypes);
+          const novelCount = Object.values(available).reduce((total, operators) => total + operators.length, 0);
+          if (novelCount < remainingSlots) available = availableShopTiers(selected);
+          const type = randomShopType(available);
+          nextShop.push(type);
+          selected.add(type);
+        }
+        game.shop = nextShop;
       }
 
       function activeCounts(team = fielded()) {
@@ -724,14 +746,14 @@
       function raceBonus(synergy, count) {
         const type = raceBuffTypes[synergy];
         if (!type || count < 2) return {};
-        const tier = count >= 5 ? 5 : count >= 3 ? 3 : 2;
-        if (type === "attack") return { attack: tier === 5 ? 1.25 : tier === 3 ? 1.2 : 1.1 };
-        if (type === "health") return { hp: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.12 };
-        if (type === "defense") return { defense: tier === 5 ? 1.3 : tier === 3 ? 1.2 : 1.12 };
-        if (type === "resistance") return { resistance: tier === 5 ? 15 : tier === 3 ? 10 : 5 };
-        if (type === "speed") return { rate: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.1 };
-        if (type === "range") return { range: tier === 5 ? 1.5 : tier === 3 ? 1 : .5 };
-        return { attack: tier === 5 ? 1.25 : tier === 3 ? 1.18 : 1.1, resistance: tier === 5 ? 15 : tier === 3 ? 10 : 5 };
+        const tier = count >= raceTierThresholds[2] ? 3 : count >= raceTierThresholds[1] ? 2 : 1;
+        if (type === "attack") return { attack: tier === 3 ? 1.25 : tier === 2 ? 1.2 : 1.1 };
+        if (type === "health") return { hp: tier === 3 ? 1.25 : tier === 2 ? 1.18 : 1.12 };
+        if (type === "defense") return { defense: tier === 3 ? 1.3 : tier === 2 ? 1.2 : 1.12 };
+        if (type === "resistance") return { resistance: tier === 3 ? 15 : tier === 2 ? 10 : 5 };
+        if (type === "speed") return { rate: tier === 3 ? 1.25 : tier === 2 ? 1.18 : 1.1 };
+        if (type === "range") return { range: tier === 3 ? 1.5 : tier === 2 ? 1 : .5 };
+        return { attack: tier === 3 ? 1.25 : tier === 2 ? 1.18 : 1.1, resistance: tier === 3 ? 15 : tier === 2 ? 10 : 5 };
       }
 
       function effectiveStats(unit, isEnemy = false) {
@@ -1029,14 +1051,22 @@
         }
         for (const [synergy, count] of Object.entries(synergyCounts)) {
           const buffType = raceBuffTypes[synergy];
-          traits.push({ name: synergy, sigil: "R", count, active: count >= 2, effect: raceBuffEffects[buffType] });
+          const tier = count >= raceTierThresholds[2] ? 3 : count >= raceTierThresholds[1] ? 2 : count >= raceTierThresholds[0] ? 1 : 0;
+          traits.push({
+            name: synergy,
+            sigil: "R",
+            count,
+            tier,
+            active: tier > 0,
+            effect: raceBuffEffects[buffType]
+          });
         }
         elements.synergyCount.textContent = String(traits.filter(trait => trait.active).length).padStart(2, "0");
         if (!traits.length) {
           elements.traits.innerHTML = `<p class="empty-note">Synergies appear when operators are deployed.</p>`;
           return;
         }
-        elements.traits.innerHTML = traits.map(trait => `<div class="trait${trait.active ? " active" : ""}"><span class="trait-sigil">${trait.sigil}</span><span><span class="trait-name">${escapeHtml(trait.name)}</span><span class="trait-effect">${escapeHtml(trait.effect)}</span></span><span class="trait-count">${trait.count}</span></div>`).join("");
+        elements.traits.innerHTML = traits.map(trait => `<div class="trait${trait.active ? " active" : ""}"><span class="trait-sigil">${trait.sigil}</span><span><span class="trait-name">${escapeHtml(trait.name)}${trait.tier ? ` · Tier ${trait.tier}` : ""}</span><span class="trait-effect">${escapeHtml(trait.effect)}</span></span><span class="trait-count">${trait.count}</span></div>`).join("");
       }
 
       function renderSelected() {
