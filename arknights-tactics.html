@@ -27,7 +27,7 @@
       --specialist: #e4775d;
       --supporter: #8db8d9;
     }
- 
+
     * { box-sizing: border-box; }
     body {
       min-width: 320px;
@@ -42,10 +42,10 @@
       font-family: "Trebuchet MS", "Arial Narrow", sans-serif;
       letter-spacing: 0;
     }
- 
+
     button { color: inherit; font: inherit; letter-spacing: 0; }
     button:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
- 
+
     .app { width: min(1420px, 100%); margin: 0 auto; animation: enter 500ms ease-out both; }
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
     .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -60,12 +60,12 @@
     .resource.health .resource-icon { color: var(--red); }
     .resource-label { display: block; color: var(--muted); font-size: 9px; text-transform: uppercase; }
     .resource-value { display: block; margin-top: 1px; font: 700 17px "Courier New", monospace; }
- 
+
     .title-row { display: flex; align-items: end; justify-content: space-between; gap: 16px; padding: 20px 0 15px; }
     .overline { margin: 0 0 5px; color: var(--acid); font-size: 10px; text-transform: uppercase; }
     h1 { margin: 0; font-size: clamp(24px, 3vw, 36px); line-height: 1; font-weight: 700; }
     .title-note { max-width: 320px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; text-align: right; }
- 
+
     .multiplayer-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 9px 16px; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); background: #202923b8; }
     .multiplayer-title { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
     .multiplayer-help, .multiplayer-status { margin: 4px 0 0; color: var(--muted); font: 10px "Courier New", monospace; line-height: 1.5; }
@@ -74,14 +74,14 @@
     .room-input:focus-visible { outline: 2px solid var(--acid); outline-offset: 2px; }
     .multiplayer-status { grid-column: 1 / -1; margin: 0; }
     .multiplayer-status[data-error="true"] { color: #f4977f; }
- 
+
     .workbench { display: grid; grid-template-columns: minmax(0, 1fr) 278px; align-items: start; gap: 22px; }
     .main-column { min-width: 0; }
     .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 28px; margin-bottom: 8px; }
     .section-heading h2 { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
     .section-heading small { color: var(--muted); font: 10px "Courier New", monospace; }
     .stage { padding: 6px 9px; border: 1px solid var(--line); color: var(--acid); font-size: 10px; text-transform: uppercase; }
- 
+
     .battlefield {
       position: relative;
       overflow: hidden;
@@ -147,6 +147,12 @@
     .unit-chip.drone-sprite-chip { width: clamp(72px, 10vw, 104px); height: auto; aspect-ratio: 264 / 160; padding: 0; transform: translate(-50%, -50%); }
     .unit-chip.drone-sprite-chip .drone-sheet { width: 100%; height: 100%; aspect-ratio: auto; overflow: hidden; border: 0; background-color: transparent; background-image: url("assets/enemies/drone-sheet.png"); background-repeat: no-repeat; background-size: 100% 800%; image-rendering: pixelated; animation: drone-idle 960ms steps(1, end) infinite; box-shadow: none; }
     .unit-chip.drone-sprite-chip.faces-left .drone-sheet { transform: scaleX(-1); }
+    .unit-chip.skeleton-chip { width: clamp(46px, 8vw, 82px); height: auto; aspect-ratio: 29 / 39; padding: 0; }
+    .unit-chip.skeleton-chip .skeleton-figure { display: block; width: 100%; height: 100%; aspect-ratio: auto; overflow: visible; border: 0; background: transparent; box-shadow: none; transform-origin: 50% 100%; transform: scaleX(var(--flip, 1)); }
+    .unit-chip.skeleton-chip.faces-left { --flip: -1; }
+    .unit-chip.skeleton-chip .skeleton-sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; transform-origin: 50% 100%; animation: skeleton-idle 1200ms ease-in-out infinite; }
+    .unit-chip.skeleton-chip.walking .skeleton-sprite { animation: skeleton-walk 320ms ease-in-out infinite; }
+    .unit-chip.skeleton-chip.swing .skeleton-figure { animation: skeleton-slash 380ms ease-out 1; }
     .unit-chip.drone-sprite-chip.swing .drone-sheet { animation: drone-fire 480ms steps(1, end) 1; }
     .unit-chip.combat-sprite.selected { outline: 0; }
     .combat-sprite .battle-figure { width: 100%; height: 100%; aspect-ratio: auto; overflow: visible; border: 0; background: transparent; box-shadow: none; }
@@ -214,7 +220,7 @@
     .health-fill { display: block; width: 100%; height: 100%; background: var(--acid); transition: width 100ms linear; }
     .enemy .health-fill { background: var(--red); }
     .board-flash { position: absolute; z-index: 3; width: 12px; height: 12px; border-radius: 50%; background: var(--acid); box-shadow: 0 0 18px 7px #d7ed6270; pointer-events: none; animation: pop 260ms ease-out forwards; }
- 
+
     .bench-area { padding: 14px 0 17px; border-bottom: 1px solid var(--line); }
     .bench-header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
     .bench-header h2 { margin: 0; font: 700 11px "Courier New", monospace; text-transform: uppercase; }
@@ -239,7 +245,7 @@
     .bench-slot .unit-role { font-size: 7px; }
     .bench-slot .rank { position: absolute; top: 3px; right: 4px; color: var(--acid); font: 9px "Courier New", monospace; }
     .bench-count { color: var(--ink); }
- 
+
     .shop-area { padding-top: 14px; }
     .shop-heading { margin-bottom: 9px; }
     .shop-heading-copy { display: grid; gap: 4px; }
@@ -264,7 +270,7 @@
     .button.danger { color: #f4977f; }
     .button.freeze-active { border-color: var(--aqua); background: #263a35; color: var(--aqua); }
     .button.compact { min-height: 29px; padding: 0 8px; }
- 
+
     .shop { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
     .shop-card {
       display: flex;
@@ -301,7 +307,7 @@
     .shop-meta { margin-top: 3px; color: var(--muted); font: 9px "Courier New", monospace; }
     .shop-base-stats { margin-top: 5px; color: #c4cbb9; font: 8px "Courier New", monospace; line-height: 1.45; }
     .shop-cost { align-self: flex-end; color: var(--acid); font-size: 11px; font-weight: 700; }
- 
+
     .intel { min-width: 0; border-left: 1px solid var(--line); padding-left: 18px; }
     .intel-section { padding: 0 0 16px; margin-bottom: 15px; border-bottom: 1px solid var(--line); }
     .intel-section:last-child { border-bottom: 0; }
@@ -326,7 +332,7 @@
     .trait-count { color: var(--muted); font: 10px "Courier New", monospace; }
     .trait.active .trait-count { color: var(--acid); }
     .empty-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
- 
+
     .selected-info { min-height: 92px; }
     .selected-top { display: flex; align-items: center; gap: 10px; }
     .selected-top .portrait { width: 44px; }
@@ -341,10 +347,10 @@
     .report strong { color: var(--ink); }
     .round-progress { height: 3px; margin-top: 10px; background: #4a5449; }
     .round-progress span { display: block; width: 0; height: 100%; background: var(--acid); transition: width 250ms ease; }
- 
+
     .bottom-note { display: flex; justify-content: space-between; gap: 12px; margin-top: 15px; color: var(--muted); font: 9px "Courier New", monospace; }
     .bottom-note strong { color: var(--ink); font-weight: 400; }
- 
+
     @keyframes enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes hit { 50% { filter: brightness(2.2); } }
     @keyframes pop { from { opacity: .9; transform: scale(.5); } to { opacity: 0; transform: scale(2.5); } }
@@ -356,9 +362,12 @@
     @keyframes arm-b { 0%, 100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }
     @keyframes weapon-swing { 0% { transform: rotate(0); } 45% { transform: rotate(-36deg); } 100% { transform: rotate(8deg); } }
     @keyframes strike-lunge { 0%, 100% { transform: translateY(0); } 45% { transform: translate(4px, -2px); } }
+    @keyframes skeleton-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2%); } }
+    @keyframes skeleton-walk { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6%) rotate(3deg); } }
+    @keyframes skeleton-slash { 0% { transform: scaleX(var(--flip, 1)) rotate(0) translateX(0); } 25% { transform: scaleX(var(--flip, 1)) rotate(-12deg) translateX(-8%); } 55% { transform: scaleX(var(--flip, 1)) rotate(18deg) translateX(34%); } 100% { transform: scaleX(var(--flip, 1)) rotate(0) translateX(0); } }
     @keyframes drone-idle { 0% { background-position: 0 0; } 25% { background-position: 0 14.2857%; } 50% { background-position: 0 28.5714%; } 75% { background-position: 0 42.8571%; } }
     @keyframes drone-fire { 0% { background-position: 0 57.1429%; } 25% { background-position: 0 71.4286%; } 50% { background-position: 0 85.7143%; } 75%, 100% { background-position: 0 100%; } }
- 
+
     @media (max-width: 980px) {
       .workbench { grid-template-columns: minmax(0, 1fr) 235px; gap: 15px; }
       .intel { padding-left: 14px; }
@@ -420,12 +429,12 @@
         <div class="resource health"><span class="resource-icon" aria-hidden="true">♥</span><span><span class="resource-label">Life Points</span><strong class="resource-value" id="life-points">100</strong></span></div>
       </div>
     </header>
- 
+
     <div class="title-row">
       <div><p class="overline">Tactical simulation · Rhodes Island</p><h1>Deployment Zone</h1></div>
       <p class="title-note">Build your squad. Your operators will take the fight.</p>
     </div>
- 
+
     <section class="multiplayer-panel" aria-label="Online multiplayer">
       <div>
         <h2 class="multiplayer-title">Online 1v1</h2>
@@ -440,7 +449,7 @@
       </div>
       <p class="multiplayer-status" id="multiplayer-status" role="status">Single-player · Add Supabase settings to enable online rooms.</p>
     </section>
- 
+
     <div class="workbench">
       <section class="main-column" aria-label="Battlefield and shop">
         <div class="section-heading"><h2>Battlefield <span class="stage" id="round">Round 1</span></h2><small id="phase-label">PREPARATION PHASE</small></div>
@@ -450,17 +459,17 @@
           <div class="midline"></div>
           <div class="token-layer" id="token-layer"></div>
         </div>
- 
+
         <section class="bench-area" aria-label="Operator bench">
           <div class="bench-header"><h2>Bench</h2><span class="bench-caption"><span class="bench-count" id="bench-count">0</span> / 8 slots · deployed <span id="field-count">0</span> / <span id="unit-cap">3</span></span></div>
           <div class="bench" id="bench"></div>
         </section>
- 
+
         <section class="armory" aria-label="Item inventory">
           <div class="bench-header"><h2>Armory</h2><span class="bench-caption" id="armory-note">Win rounds to find items.</span></div>
           <div class="item-tray" id="item-tray"></div>
         </section>
- 
+
         <section class="shop-area" aria-label="Operator shop">
           <div class="section-heading shop-heading">
             <div class="shop-heading-copy"><h2>Available Operators</h2><small id="shop-odds"></small><small>Unlocks: Tier 1 Lv.1 · Tier 2 Lv.2 · Tier 3 Lv.3 · Tier 4 Lv.4 · Tier 5 Lv.5 · Tier 6 Lv.7</small></div>
@@ -474,7 +483,7 @@
           <div class="shop" id="shop"></div>
         </section>
       </section>
- 
+
       <aside class="intel" aria-label="Tactical intel">
         <section class="intel-section">
           <h2 class="intel-title">Synergies <span class="squad-count" id="synergy-count">0</span></h2>
@@ -491,10 +500,10 @@
         </section>
       </aside>
     </div>
- 
+
     <footer class="bottom-note"><span><strong>Controls:</strong> Select an operator, then an empty tile to deploy or move them.</span><span>Max Elite + Trust · data: <a href="https://github.com/Kengxxiao/ArknightsGameData" target="_blank" rel="noreferrer">ArknightsGameData</a></span></footer>
   </main>
- 
+
   <script src="operators-data.js"></script>
   <script src="supabase-config.js"></script>
   <script src="multiplayer.js"></script>
@@ -689,7 +698,7 @@
       const maxBench = 8;
       const gridWidth = 7;
       const gridHeight = 4;
- 
+
       const elements = {
         battlefield: document.querySelector("#battlefield"),
         tileGrid: document.querySelector("#tile-grid"),
@@ -723,7 +732,7 @@
         buyXp: document.querySelector("#buy-xp"),
         fight: document.querySelector("#fight")
       };
- 
+
       const game = {
         gold: 10,
         lifePoints: 100,
@@ -753,7 +762,7 @@
         battleId: null,
         startingBattle: false
       };
- 
+
       const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
       const definitionOf = unit => unit.definition || byId[unit.type];
       const synergiesOf = definition => {
@@ -793,11 +802,11 @@
         aegirTideCharm: { name: "Aegir Tide Charm", icon: "≈", effect: "Aegir: +20% HP", cost: 3, color: "#73e5d2", race: "Aegir", buff: "hp", multiplier: 1.2 },
         kurantaSpurs: { name: "Kuranta Spurs", icon: "✦", effect: "Kuranta: +15% attack speed", cost: 3, color: "#c4a765", race: "Kuranta", buff: "rate", multiplier: 1.15 }
       };
- 
+
       function makeUnit(type, location, slot = 0, rank = 1) {
         return { uid: String(game.nextId++), type, location, slot, x: 0, y: 0, rank, items: [], hp: 0, maxHp: 0, dead: false };
       }
- 
+
       function availableShopTiers(excludedTypes = new Set()) {
         const maxTier = unlockedOperatorTier(game.level);
         return definitions.reduce((tiers, definition) => {
@@ -808,7 +817,7 @@
           return tiers;
         }, {});
       }
- 
+
       function effectiveShopOdds(available = availableShopTiers()) {
         const odds = shopTierOdds[game.level];
         const availableTiers = Object.keys(available).map(tier => ({
@@ -824,7 +833,7 @@
         if (!effectiveTotal) throw new Error(`No operators available for level ${game.level} and round ${game.round}.`);
         return weightedTiers.map(tier => ({ ...tier, chance: tier.weight / effectiveTotal }));
       }
- 
+
       function randomShopType(available) {
         const tiers = effectiveShopOdds(available);
         let roll = Math.random() * tiers.reduce((total, tier) => total + tier.weight, 0);
@@ -834,7 +843,7 @@
         }
         throw new Error(`Unable to select an operator for level ${game.level} and round ${game.round}.`);
       }
- 
+
       function rollShop() {
         if (game.shopFrozen) return;
         const previousOffers = new Set(game.shop.filter(Boolean));
@@ -854,7 +863,7 @@
         const itemIds = Object.keys(itemDefinitions).filter(itemId => itemId !== game.itemOffer);
         game.itemOffer = itemIds[Math.floor(Math.random() * itemIds.length)];
       }
- 
+
       function activeCounts(team = fielded()) {
         const roleCounts = Object.fromEntries(roles.map(role => [role, 0]));
         const synergyCounts = {};
@@ -865,7 +874,7 @@
         }
         return { roleCounts, synergyCounts };
       }
- 
+
       function roleBonus(definition, roleCounts) {
         const count = roleCounts[definition.role] || 0;
         if (count < 2) return {};
@@ -878,7 +887,7 @@
         if (definition.role === "Supporter") return { range: count >= 4 ? 4.0 : 3.0 };
         return {};
       }
- 
+
       function raceBonus(synergy, count) {
         const type = raceBuffTypes[synergy];
         if (!type || count < 2) return {};
@@ -891,7 +900,7 @@
         if (type === "range") return { range: tier === 3 ? 1.5 : tier === 2 ? 1 : .5 };
         return { attack: tier === 3 ? 1.25 : tier === 2 ? 1.18 : 1.1, resistance: tier === 3 ? 15 : tier === 2 ? 10 : 5 };
       }
- 
+
       function effectiveStats(unit, isEnemy = false) {
         const definition = definitionOf(unit);
         const rankScale = 1 + (unit.rank - 1) * .65;
@@ -944,7 +953,7 @@
         unit.cooldown = Math.random() * .3;
         unit.dead = false;
       }
- 
+
       function renderTiles() {
         elements.tileGrid.innerHTML = "";
         for (let y = 0; y < gridHeight; y++) {
@@ -959,14 +968,14 @@
           }
         }
       }
- 
+
       function portraitMarkup(definition, enemy = false) {
         if (enemy) {
-          const accent = { raider: "#e88956", crawler: "#a9c45d", caster: "#bd8be0", drone: "#75c9d6", crusher: "#b4a77d", patriot: "#e4a04a", frostnova: "#9be7f2", skadi: "#e97879" }[definition.enemyType] || "#e76d56";
-          const sigil = { raider: "R", crawler: "B", caster: "C", drone: "D", crusher: "H", patriot: "P", frostnova: "F", skadi: "S" }[definition.enemyType] || "!";
+          const accent = { raider: "#e88956", crawler: "#a9c45d", caster: "#bd8be0", drone: "#75c9d6", crusher: "#b4a77d", skeleton: "#e6a24a", patriot: "#e4a04a", frostnova: "#9be7f2", skadi: "#e97879" }[definition.enemyType] || "#e76d56";
+          const sigil = { raider: "R", crawler: "B", caster: "C", drone: "D", crusher: "H", skeleton: "K", patriot: "P", frostnova: "F", skadi: "S" }[definition.enemyType] || "!";
           return `<span class="portrait hostile-portrait"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 48c1-10 7-14 15-16h10c9 2 14 7 15 16" fill="#302726"/><path d="M14 31 9 23c-2-4-1-10 2-14l7-5h12l8 6 1 11-5 10-6 7H18z" fill="#171b19" stroke="#82776b" stroke-width="1.5"/><path d="M8 17 10 8l9-6h12l9 7 1 8-7-4-5 2-6-3-7 4z" fill="#55564b"/><path d="M12 17h24l-3 7-7 3h-7l-6-4z" fill="#171c1b" stroke="${accent}" stroke-width="1.5"/><path d="M17 20h5m5 0h5" stroke="${accent}" stroke-width="2"/><path d="m18 29 6 3 6-3" fill="none" stroke="#8e7261" stroke-width="2"/><path d="M5 40h38" stroke="${accent}" stroke-width="3"/></svg><span class="portrait-mark">${sigil}</span></span>`;
         }
- 
+
         const look = operatorLooks[definition.id] || { hair: "#81847c", accent: "#d7ed62", feature: "collar" };
         const features = {
           ears: `<path d="m12 13-7-9 12 4m19 5 7-9-12 4" fill="${look.hair}" stroke="${look.accent}" stroke-width="1.5"/>`,
@@ -978,10 +987,10 @@
           leaves: `<path d="M17 8C8 8 7 2 5 2c1 7 4 11 12 11m14-5c9 0 10-6 12-6-1 7-4 11-12 11" fill="${look.accent}"/>`,
           cat: `<path d="m12 12-5-9 13 5m16 4 5-9-13 5" fill="${look.hair}" stroke="${look.accent}" stroke-width="1.5"/>`
         }[look.feature];
- 
+
         return `<span class="portrait" style="--role-color:${definition.color}"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 48c1-10 7-14 15-16h8c8 2 14 7 15 16" fill="#29332d"/><path d="m16 32 8 5 8-5 5 4-5 12H16l-5-12z" fill="${look.accent}"/><path d="M20 27h8v8h-8z" fill="#c69472"/><ellipse cx="24" cy="19" rx="11" ry="13" fill="#d5ad8c"/><path d="M12 21 9 13l4-9 10-3 10 3 6 8-4 10-4-9-8 2-8-3z" fill="${look.hair}"/><path d="M18 20h3m6 0h3" stroke="#332c29" stroke-width="1.6" stroke-linecap="round"/><path d="M21 27c2 1 4 1 6 0" fill="none" stroke="#865e50" stroke-width="1.2" stroke-linecap="round"/>${features}<path d="M15 30 9 38l7 3m17-11 6 8-7 3" fill="none" stroke="#d5ad8c" stroke-width="2"/></svg><span class="portrait-mark">${escapeHtml(definition.initials)}</span></span>`;
       }
- 
+
       function battleSpriteMarkup(definition, enemy = false) {
         if (enemy && definition.isBoss) {
           const bossSprite = {
@@ -996,6 +1005,9 @@
         }
         if (enemy && definition.enemyType === "drone") {
           return `<span class="portrait battle-figure drone-sheet" aria-hidden="true"></span>`;
+        }
+        if (enemy && definition.enemyType === "skeleton") {
+          return `<span class="portrait battle-figure skeleton-figure" aria-hidden="true"><img class="skeleton-sprite" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAnCAYAAADzckPEAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmE2NjUzNTc2LTc3YWYtNDIwNS05MzU3LTk4NTY5OTExZDMxYgAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNokzfzauP9GEnUuslRhRPYhQAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6MTc0NmY5NTAtNmVkYi00ZmJmLTkxYzktZGQ2YzUxZmY0ZDg3bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaDXpq8CbfOqCrTiHh+AcmYkAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIJdijUM6+QgvRXV5QEcwpbMPXDzO1lfSG/ibeQDE2uugpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2g2+X+TWi3eaHo103ox4qd4AAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggL1UWZ4+2d1NWkSqRcYIH7aojimpZo59eLNi8a6ql+idkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTphNjY1MzU3Ni03N2FmLTQyMDUtOTM1Ny05ODU2OTkxMWQzMWIvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDo0ZmZhM2FmYi1iMWZjLTRiMzUtYWQzZC1kYzRhMTA2MTZiMWRyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggl2KNQzr5CC9FdXlARzClsw9cPM7WV9Ib+Jt5AMTa66CiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIJ7OLSM7E6oIAl0v1QVXvDf14NPqS4ib/OsEXwakbV8uomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIC5DgYNBVZPo3ISCPeClXEsNLvNHlfD0qPAlHnEajR0tdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2WEAX52ofhZDNxmjnDyxfMlGH43VcURHT69vY4REH5WNuiiNKyWZpDUYCTHgTPuW4gSv7xrv3bZBEc4sRZ9LVNW7dkJUd8wAAA8JJREFUeJytl7FrG1ccxz9nBB16QUUSPWobTosFJkUtHGkGUW6w/gLj4ShGaBL1EDI0Q9BcDjy2S4uHoEEEG2wNXZIhBosgOphbRIJBWnQgX1BqmQwaUiq4Dsp7vTvJtazTFw7evfd77/N7v/e735MUbpFhGL5oO46j3GYfS4Zh+IZh+N1uVz5BB+JoynOxcLVaJZ/P0263yefzctyyrNg7Dk02DMOvVqszDZcJXpkX2G635fvh4SFxQr0SBLZarZlGwRBblhUbLHd6E1DIsiwsy6JYLErwolqJdkThtm1j2zbFYpF6vS77g+FeCOo4jtJsNgEoFAoSbNs2juNQLBYpl8vUajX29/cXhgklYHKmpmkSBNu2Tb1eZ3Nzk3K5HBsUVCi8pmkCSCDAxcUFALVajXK5LN/jKAGyvIV2u7u7K41EeEW/KByLSn7gIv1N06RQKISMbNueOXnRAhGCivACNBoNtre3pxwQTsSpSAnRECEW7+l0OgRstVo0Gg3S6fTyam90p+JshUTFajabsaGh7P3528MQ7PXjd7iuy3A4xLbtpQAhEF6Ap888Xj+GF59Pwvr9L01Udcjq6ioAnU4nLm8aaj464cUMo2XBhBQI3zLB8BbuOQA8f5Mhl8vR6XTQdX05iRS8olzXJZfL8erHHicv33Pujfmjl2U0GqGqKqPRiKurq1hQWZEymYyvqio/fH3Fg9UPwJf81vvuk5kngctQKHvFoufemOLvWWaNLRWq6zqlUgnz0QnP32QA8DwPz/OkcalUQtf15UGD0nWdTqfDaDSSj67rskJlMplYP0Xlb6Roodd1PfQIVavV2LuV32m07Lmui6qqoT7btuWdq2maPxgMFsri4H0KgYIvgMlkkj9/+guAp88chG+pVApgIXDoTB3HURzHUVzXlcAn99+GJhTuOfT7fXZ2dkilUmia5muadqcznvJSfK/JZFL2Pbn/lnNvzIPVBOfemF/PUDRN8yuVCsfHxwBcX18DMM/OQwazgACXl5esra3JtqhIAgzcCS4H5gFGoQIMUKlU2NraYm9v71a4ArC+/pUPkEh8xnj8N6It6m3QkSg0Cj86OgKYggcdkNBsdp1er0/HnqyXq/oSLqDD4XsAPn7858aifxNcODAYDJQQNJvV6fUmmZvN6pydhf9iBB3q99/9b8JE4aenpwAcHBygCKBQNjupNgIoxmY5dBs4CA9K2djY8CeDX0ggQK/n0uv1p8DR8XnAUSW63e6nSRv+YPCBhw+/uesad9aUl2Ln8+o/p+fXv6TJ97TD7KmkAAAAAElFTkSuQmCC" alt=""></span>`;
         }
         const look = enemy
           ? {
@@ -1021,16 +1033,17 @@
         const head = enemy
           ? `<path d="m19 31 1-14 5-8h14l7 8-1 15-5 7H25z" fill="#747568" stroke="#272c29" stroke-width="1.5"/><path d="m17 20 2-9 8-6h13l9 8 1 8-8-4-7 2-8-3-7 5z" fill="#4c514a"/><path d="M22 20h20l-3 6H25z" fill="#202522" stroke="${look.accent}" stroke-width="1.5"/><path d="M27 22h4m4 0h4" stroke="${look.accent}" stroke-width="2"/>`
           : `<path d="M25 34h10v9H25z" fill="#c69472"/><ellipse cx="30" cy="24" rx="12" ry="14" fill="#d5ad8c"/><path d="m18 27-3-9 4-11 11-4 10 4 7 9-3 13-4-12-9 2-8-4z" fill="${look.hair}"/><path d="M23 23h3m7 0h3" stroke="#332c29" stroke-width="1.7" stroke-linecap="round"/><path d="M28 31c2 1 4 1 6 0" fill="none" stroke="#865e50" stroke-width="1.2"/>${look.feature === "ears" || look.feature === "wolf" || look.feature === "cat" ? `<path d="m20 16-8-11 13 5m18 6 8-11-13 5" fill="${look.feature === "wolf" ? "#c8d0cf" : look.hair}" stroke="${look.accent}" stroke-width="1.5"/>` : look.feature === "horns" ? `<path d="M20 16 15 5l8 6m14 5 5-11-8 6" fill="${look.accent}"/>` : look.feature === "halo" ? `<path d="M20 7c5-6 15-6 20 0" fill="none" stroke="${look.accent}" stroke-width="2.5"/>` : look.feature === "crest" ? `<path d="m23 10 7-8 7 8-4 5h-7z" fill="${look.trim}"/>` : look.feature === "leaves" ? `<path d="M21 13c-8-1-9-7-10-10 7 2 11 5 11 11m9-1c8-1 9-7 10-10-7 2-11 5-11 11" fill="${look.trim}"/>` : look.feature === "collar" ? `<path d="m19 39 7 4 4-5 5 5 7-5-3 12H22z" fill="${look.trim}"/>` : ""}`;
- 
+
         return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="91" rx="15" ry="3" fill="#080c09" opacity=".55"/><g class="sprite-walker"><g class="sprite-leg-a"><path d="m24 63-2 15 2 9h8l1-8-2-15z" fill="${enemy ? "#303833" : look.pants}" stroke="#111713" stroke-width="1.5"/><path d="m23 83-5 5v3h15v-4l-3-4z" fill="#171c19"/></g><g class="sprite-leg-b"><path d="m34 63 3 14-1 10h8l2-9-4-17z" fill="${enemy ? "#48514a" : look.pants}" stroke="#111713" stroke-width="1.5"/><path d="m36 84-3 4v3h16v-4l-5-4z" fill="#171c19"/></g><path d="m22 41-8 8 3 20 10 4 5-7 7 7 10-5 1-19-9-8z" fill="${enemy ? "#555b53" : look.coat}" stroke="#1c231e" stroke-width="2"/><path d="m24 43 7 6 8-6 5 5-4 21H25l-5-21z" fill="${enemy ? "#39443d" : look.inner}"/><path d="m28 49 4 5 4-5 4 19H26z" fill="${enemy ? "#d8d9c8" : look.trim}" opacity=".9"/><path d="m19 47 7 4-3 14-7-4m24-14-6 4 3 14 7-4" fill="none" stroke="${enemy ? "#bd7060" : look.accent}" stroke-width="2"/><path d="M23 66h17" stroke="${enemy ? "#a34c43" : look.trim}" stroke-width="2"/><g class="sprite-arm-back"><path d="m17 48-7 12 4 9 7-3-3-7 6-6z" fill="#c69472" stroke="#252b26" stroke-width="1.5"/><path d="m11 59 4-2 4 4-4 7-5-2z" fill="${enemy ? "#343b35" : look.pants}"/></g>${weapon}<g class="sprite-arm-front"><path d="m43 48 8 7 1 10-7 3-4-9-7-5z" fill="#c69472" stroke="#252b26" stroke-width="1.5"/><path d="m45 58 7-2 3 6-5 7-6-3z" fill="${enemy ? "#353d36" : look.pants}"/></g>${head}<path d="M20 72 32 78l13-6" fill="none" stroke="${enemy ? "#f0e2ba" : look.trim}" stroke-width="1.5" opacity=".8"/></g></svg></span>`;
       }
- 
+
       function chipMarkup(unit, enemy = false) {
         const definition = definitionOf(unit);
         const role = escapeHtml(definition.role);
         const selected = game.selected === unit.uid ? " selected" : "";
         const boss = enemy && definition.isBoss ? " boss" : "";
         const drone = enemy && definition.enemyType === "drone" ? " drone-sprite-chip" : "";
+        const skeleton = enemy && definition.enemyType === "skeleton" ? " skeleton-chip" : "";
         const combat = game.phase === "battle";
         const preview = enemy && game.phase === "prep";
         const fullBody = combat || preview;
@@ -1038,9 +1051,9 @@
         const rank = unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : "";
         const health = unit.maxHp ? Math.max(0, unit.hp / unit.maxHp * 100) : 100;
         const top = preview ? (unit.y + .9) / gridHeight * 100 : (unit.y + .5) / gridHeight * 100;
-        return `<div class="unit-chip${enemy ? " enemy" : ""}${boss}${drone}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};--boss-color:${definition.color};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${boss ? "Boss " : ""}${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
+        return `<div class="unit-chip${enemy ? " enemy" : ""}${boss}${drone}${skeleton}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};--boss-color:${definition.color};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${boss ? "Boss " : ""}${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
       }
- 
+
       function removeFlatBackground(image) {
         const canvas = document.createElement("canvas");
         const width = image.naturalWidth;
@@ -1062,7 +1075,7 @@
           visited[index] = 1;
           queue[queueLength++] = index;
         };
- 
+
         for (let x = 0; x < width; x++) {
           enqueue(x);
           enqueue((height - 1) * width + x);
@@ -1071,7 +1084,7 @@
           enqueue(y * width);
           enqueue(y * width + width - 1);
         }
- 
+
         for (let cursor = 0; cursor < queueLength; cursor++) {
           const index = queue[cursor];
           const offset = index * 4;
@@ -1087,11 +1100,11 @@
           if (y > 0) enqueue(index - width);
           if (y + 1 < height) enqueue(index + width);
         }
- 
+
         context.putImageData(frame, 0, 0);
         return canvas.toDataURL("image/png");
       }
- 
+
       function loadProcessedArt(source) {
         if (!processedArt.has(source)) {
           processedArt.set(source, new Promise((resolve, reject) => {
@@ -1109,7 +1122,7 @@
         }
         return processedArt.get(source);
       }
- 
+
       function attachArt(target, source, className, loadedClass) {
         if (!target || !source) return;
         target.classList.add("art-loading");
@@ -1135,7 +1148,7 @@
           target.classList.add("art-missing");
         });
       }
- 
+
       function attachVideoArt(target, source) {
         if (!target || !source) return;
         const video = document.createElement("video");
@@ -1153,7 +1166,7 @@
         video.src = source;
         target.append(video);
       }
- 
+
       function setVideoWalking(node, walking) {
         const video = node?.querySelector(".midnight-walk-video");
         if (!video) return;
@@ -1163,7 +1176,7 @@
           video.currentTime = 0;
         }
       }
- 
+
       function attachDirectionalArt(target, assets) {
         if (!target) return;
         const idleImage = new Image();
@@ -1187,20 +1200,20 @@
         walkImage.src = assets.walkDirections.south;
         target.append(idleImage, walkImage);
       }
- 
+
       function setDirectionalArt(node, assets, direction, walking) {
         const figure = node.querySelector(".battle-figure");
         const image = figure?.querySelector(walking ? ".directional-walk" : ".directional-idle");
         const source = (walking ? assets.walkDirections : assets.idleDirections)[direction];
         if (image && image.getAttribute("src") !== source) image.src = source;
       }
- 
+
       function directionFromVector(dx, dy) {
         if (!dx && !dy) return "south";
         const directions = ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"];
         return directions[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8];
       }
- 
+
       function attachAnimatedArt(target, sources, className, loadedClass) {
         if (!target || !sources?.length) return;
         target.classList.add("art-loading");
@@ -1235,7 +1248,7 @@
           target.classList.add("art-missing");
         });
       }
- 
+
       function renderBoardTokens() {
         elements.tokenLayer.innerHTML = "";
         game.nodeById.clear();
@@ -1265,7 +1278,7 @@
           }
         }
       }
- 
+
       function renderBench() {
         elements.bench.innerHTML = "";
         for (let slot = 0; slot < maxBench; slot++) {
@@ -1288,7 +1301,7 @@
           elements.bench.append(button);
         }
       }
- 
+
       function renderItemTray() {
         const selectedUnit = game.allies.find(unit => unit.uid === game.selected);
         elements.armoryNote.textContent = game.itemInventory.length
@@ -1320,7 +1333,7 @@
           elements.itemTray.append(slot);
         }
       }
- 
+
       function renderShop() {
         elements.shop.innerHTML = "";
         game.shop.forEach((type, index) => {
@@ -1361,7 +1374,7 @@
           elements.shop.append(card);
         }
       }
- 
+
       function renderTraits() {
         const { roleCounts, synergyCounts } = activeCounts();
         const traits = [];
@@ -1388,7 +1401,7 @@
         }
         elements.traits.innerHTML = traits.map(trait => `<div class="trait${trait.active ? " active" : ""}"><span class="trait-sigil">${trait.sigil}</span><span><span class="trait-name">${escapeHtml(trait.name)}${trait.tier ? ` · Tier ${trait.tier}` : ""}</span><span class="trait-effect">${escapeHtml(trait.effect)}</span></span><span class="trait-count">${trait.count}</span></div>`).join("");
       }
- 
+
       function renderSelected() {
         const unit = game.allies.find(item => item.uid === game.selected);
         if (!unit) {
@@ -1407,7 +1420,7 @@
         document.querySelector("#recall").addEventListener("click", recallSelected);
         document.querySelector("#sell").addEventListener("click", sellSelected);
       }
- 
+
       function render() {
         elements.gold.textContent = String(game.gold);
         elements.lifePoints.textContent = String(game.lifePoints);
@@ -1443,16 +1456,16 @@
         renderTraits();
         renderSelected();
       }
- 
+
       function setReport(message) {
         elements.report.textContent = message;
       }
- 
+
       function setMultiplayerStatus(message, isError = false) {
         elements.multiplayerStatus.textContent = message;
         elements.multiplayerStatus.dataset.error = String(isError);
       }
- 
+
       function handleRoomStatus(status) {
         const wasConnected = multiplayerState.connected;
         multiplayerState.connected = status.connected;
@@ -1510,7 +1523,7 @@
           }
         }
       }
- 
+
       async function sendRoomMessage(type, data) {
         try {
           await window.multiplayerClient.send(type, data);
@@ -1521,7 +1534,7 @@
           return false;
         }
       }
- 
+
       function localTeamSnapshot() {
         return {
           round: game.round,
@@ -1535,7 +1548,7 @@
           }))
         };
       }
- 
+
       function validTeamSnapshot(snapshot) {
         if (!snapshot || snapshot.round !== game.round || !Array.isArray(snapshot.units) || snapshot.units.length === 0 || snapshot.units.length > 7) return false;
         const occupied = new Set();
@@ -1550,7 +1563,7 @@
           return true;
         });
       }
- 
+
       function makeOpponentUnits(snapshot, playerId) {
         if (!validTeamSnapshot(snapshot)) throw new Error("The opponent sent an invalid team for this round.");
         return snapshot.units.map((unit, index) => {
@@ -1572,7 +1585,7 @@
           };
         });
       }
- 
+
       async function toggleMultiplayerReady() {
         if (game.phase !== "prep" || multiplayerState.startingBattle) return;
         if (multiplayerState.ready) {
@@ -1601,7 +1614,7 @@
         render();
         await tryStartMultiplayerBattle();
       }
- 
+
       async function tryStartMultiplayerBattle() {
         if (!window.multiplayerClient.isHost || !multiplayerState.ready || !multiplayerState.opponentReady ||
             multiplayerState.startingBattle || game.phase !== "prep") return;
@@ -1637,7 +1650,7 @@
           render();
         }
       }
- 
+
       function handleMultiplayerMessage(type, data, from) {
         if (!window.multiplayerClient.connected || from === window.multiplayerClient.playerId) return;
         if (type === "hello") {
@@ -1686,7 +1699,7 @@
           });
         }
       }
- 
+
       async function connectToRoom(create) {
         elements.createRoom.disabled = true;
         elements.joinRoom.disabled = true;
@@ -1708,7 +1721,7 @@
           elements.joinRoom.disabled = false;
         }
       }
- 
+
       async function copyInviteLink() {
         if (!window.multiplayerClient.connected || !window.multiplayerClient.isHost) return;
         const url = new URL(window.location.href);
@@ -1720,13 +1733,13 @@
           setMultiplayerStatus(`Unable to copy the invite link: ${error.message}`, true);
         }
       }
- 
+
       function emptyBenchSlot() {
         const occupied = new Set(benched().map(unit => unit.slot));
         for (let slot = 0; slot < maxBench; slot++) if (!occupied.has(slot)) return slot;
         return -1;
       }
- 
+
       function buyOperator(index) {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const definition = byId[game.shop[index]];
@@ -1738,7 +1751,7 @@
         setReport(merged ? `${definition.name}: three operators merged and ranked up.` : `${definition.name} joined the bench.`);
         render();
       }
- 
+
       function mergeCopies(type) {
         let merged = false;
         while (true) {
@@ -1755,7 +1768,7 @@
         }
         return merged;
       }
- 
+
       function reroll() {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 2) return;
         game.gold -= 2;
@@ -1764,14 +1777,14 @@
         setReport("Shop rerolled. New offers are available.");
         render();
       }
- 
+
       function toggleShopFreeze() {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         game.shopFrozen = !game.shopFrozen;
         setReport(game.shopFrozen ? "Shop frozen. These offers will stay next round." : "Shop unfrozen. Offers will refresh next round.");
         render();
       }
- 
+
       function buyXp() {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 4 || game.level >= 7) return;
         game.gold -= 4;
@@ -1780,7 +1793,7 @@
         setReport(`Training complete. +4 XP.${tierMessage} Level ${game.level} · deployment limit: ${unitCap()}.`);
         render();
       }
- 
+
       function equipItemToUnit(unit, itemIndex) {
         const itemId = game.itemInventory[itemIndex];
         const item = itemDefinitions[itemId];
@@ -1798,7 +1811,7 @@
         setReport(`${item.name} equipped to ${definitionOf(unit).name}. ${item.effect}.`);
         render();
       }
- 
+
       function handleItemTrayClick(itemIndex) {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const unit = game.allies.find(item => item.uid === game.selected);
@@ -1812,7 +1825,7 @@
           : `Selected ${itemDefinitions[game.itemInventory[itemIndex]].name}. Choose an operator to equip it.`);
         render();
       }
- 
+
       function buyItemOffer() {
         const itemId = game.itemOffer;
         const item = itemDefinitions[itemId];
@@ -1824,7 +1837,7 @@
         setReport(`${item.name} added to the Armory. Select it there to equip an operator.`);
         render();
       }
- 
+
       function grantXp(amount) {
         const previousLevel = game.level;
         const previousTier = unlockedOperatorTier(game.level);
@@ -1839,7 +1852,7 @@
           currentTier: unlockedOperatorTier(game.level)
         };
       }
- 
+
       function placeOnBoard(unit, x, y) {
         if (multiplayerState.connected && multiplayerState.ready) return false;
         if (y < 2 || y > 3) {
@@ -1860,7 +1873,7 @@
         render();
         return true;
       }
- 
+
       function handleTileClick(tile) {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || !game.selected) return;
         const unit = game.allies.find(item => item.uid === game.selected);
@@ -1884,7 +1897,7 @@
           render();
         }
       }
- 
+
       function handleUnitClick(uid) {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const unit = game.allies.find(item => item.uid === uid);
@@ -1923,7 +1936,7 @@
         game.selected = game.selected === uid ? null : uid;
         render();
       }
- 
+
       function handleBenchSlot(slot, uid) {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         if (uid) {
@@ -1938,7 +1951,7 @@
         setReport(`${definitionOf(selected).name} returned to the bench.`);
         render();
       }
- 
+
       function recallSelected() {
         const unit = game.allies.find(item => item.uid === game.selected);
         if (!unit || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
@@ -1963,7 +1976,7 @@
         game.selected = null;
         render();
       }
- 
+
       function sellSelected() {
         const index = game.allies.findIndex(unit => unit.uid === game.selected);
         if (index < 0 || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
@@ -1975,10 +1988,11 @@
         setReport(`${definitionOf(unit).name} sold. +${value} LMD.`);
         render();
       }
- 
+
       function makeEnemy(index, count) {
         const archetypes = [
           { id: "raider", name: "Infected Raider", initials: "IR", role: "Guard", unlockRound: 1, hp: 690, attack: 118, defense: 58, resistance: 0, interval: 1.3, damageType: "physical", moveSpeed: .78, range: 1.15, color: "#e88956" },
+          { id: "skeleton", name: "Skeleton Swordsman", initials: "SS", role: "Guard", unlockRound: 2, hp: 820, attack: 132, defense: 70, resistance: 0, interval: 1.1, damageType: "physical", moveSpeed: .85, range: 1.15, color: "#e6a24a" },
           { id: "crawler", name: "Corrupted Crawler", initials: "CC", role: "Guard", unlockRound: 1, hp: 410, attack: 82, defense: 28, resistance: 0, interval: .95, damageType: "physical", moveSpeed: 1.45, range: .9, color: "#a9c45d" },
           { id: "caster", name: "Ritual Caster", initials: "RC", role: "Caster", unlockRound: 2, hp: 570, attack: 138, defense: 38, resistance: 25, interval: 1.55, damageType: "arts", moveSpeed: .62, range: 2.5, color: "#bd8be0" },
           { id: "drone", name: "Recon Drone", initials: "RD", role: "Sniper", unlockRound: 3, hp: 460, attack: 108, defense: 34, resistance: 10, interval: 1.2, damageType: "physical", moveSpeed: .9, range: 2.7, color: "#75c9d6" },
@@ -2008,11 +2022,11 @@
         };
         return { uid: `enemy-${game.round}-${index}`, type: definition.id, definition, team: "enemy", location: "board", x, y, rank: 1, hp: 0, maxHp: 0 };
       }
- 
+
       function makeEnemyWave() {
         const count = Math.min(7, 1 + Math.floor((game.round + 1) / 2));
         if (game.round % 5 !== 0) return Array.from({ length: count }, (_, index) => makeEnemy(index, count));
- 
+
         const bosses = [
           { id: "patriot", name: "Patriot", initials: "PT", role: "Defender", hp: 4200, attack: 280, defense: 280, resistance: 20, interval: 1.8, damageType: "physical", moveSpeed: .42, range: .9, color: "#e4a04a" },
           { id: "frostnova", name: "FrostNova", initials: "FN", role: "Caster", hp: 3400, attack: 300, defense: 120, resistance: 35, interval: 1.6, damageType: "arts", moveSpeed: .62, range: 2.5, color: "#9be7f2" },
@@ -2042,7 +2056,7 @@
           maxHp: 0
         }];
       }
- 
+
       function startBattle() {
         if (game.phase === "gameover") {
           resetGame();
@@ -2068,7 +2082,7 @@
         game.frameTime = performance.now();
         requestAnimationFrame(battleFrame);
       }
- 
+
       function nearestEnemy(unit) {
         const opponents = unit.team === "enemy" ? fielded() : game.enemies;
         let target = null;
@@ -2083,7 +2097,7 @@
         }
         return { target, distance: nearest };
       }
- 
+
       function hitEffect(unit, target) {
         const attackerNode = game.nodeById.get(unit.uid);
         if (attackerNode) {
@@ -2104,7 +2118,7 @@
         elements.battlefield.append(effect);
         effect.addEventListener("animationend", () => effect.remove(), { once: true });
       }
- 
+
       function advanceBattle(dt) {
         game.battleTime += dt;
         const combatants = [...fielded(), ...game.enemies].filter(alive);
@@ -2160,11 +2174,11 @@
         }
         return true;
       }
- 
+
       function remainingHealth(team) {
         return team.filter(alive).reduce((total, unit) => total + unit.hp / unit.maxHp, 0);
       }
- 
+
       function updateBattleNodes() {
         for (const unit of [...fielded(), ...game.enemies]) {
           const node = game.nodeById.get(unit.uid);
@@ -2175,14 +2189,14 @@
           node.classList.toggle("dead", !alive(unit));
         }
       }
- 
+
       function battleFrame(now) {
         if (game.phase !== "battle") return;
         const dt = Math.min((now - game.frameTime) / 1000, .04);
         game.frameTime = now;
         if (advanceBattle(dt)) requestAnimationFrame(battleFrame);
       }
- 
+
       function resolveBattle(victory, multiplayerOutcome = null) {
         const roundEnded = game.round;
         const remainingEnemies = game.enemies.filter(alive).length;
@@ -2233,7 +2247,7 @@
         }
         render();
       }
- 
+
       function resetGame() {
         game.gold = 10;
         game.lifePoints = 100;
@@ -2251,7 +2265,7 @@
         setReport("Buy operators, deploy them in your zone, and start the battle.");
         render();
       }
- 
+
       elements.tileGrid.addEventListener("click", event => {
         const tile = event.target.closest(".tile");
         if (tile) handleTileClick(tile);
@@ -2310,11 +2324,11 @@
         else if (multiplayerState.connected) void toggleMultiplayerReady();
         else startBattle();
       });
- 
+
       window.multiplayerClient.setHandlers(handleMultiplayerMessage, handleRoomStatus);
       const inviteCode = new URLSearchParams(window.location.search).get("room");
       if (inviteCode) elements.roomCode.value = inviteCode.trim().toUpperCase();
- 
+
       renderTiles();
       rollShop();
       game.enemies = makeEnemyWave();
