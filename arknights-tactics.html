@@ -126,6 +126,9 @@
       cursor: pointer;
     }
     .unit-chip.enemy { border-color: #d8735f; background: #392825f2; }
+    .unit-chip.boss:not(.combat-sprite) { border-color: var(--boss-color); box-shadow: 0 0 18px color-mix(in srgb, var(--boss-color) 45%, transparent); }
+    .unit-chip.boss:not(.combat-sprite)::after { position: absolute; top: -13px; padding: 2px 4px; background: var(--boss-color); color: #141816; content: "BOSS"; font: 700 8px "Courier New", monospace; }
+    .unit-chip.boss.combat-sprite { filter: drop-shadow(0 0 7px var(--boss-color)); }
     .unit-chip.selected { outline: 2px solid var(--acid); outline-offset: 2px; }
     .unit-chip.dead { opacity: .25; filter: grayscale(1); }
     .unit-chip.hit { animation: hit 180ms ease-out; }
@@ -254,6 +257,7 @@
     .button.primary { border-color: var(--acid); background: var(--acid); color: #1b2117; }
     .button.primary:hover:not(:disabled) { background: #e6fb80; }
     .button.danger { color: #f4977f; }
+    .button.freeze-active { border-color: var(--aqua); background: #263a35; color: var(--aqua); }
     .button.compact { min-height: 29px; padding: 0 8px; }
 
     .shop { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
@@ -455,6 +459,7 @@
             <div class="shop-heading-copy"><h2>Available Operators</h2><small id="shop-odds"></small><small>Unlocks: Tier 1 Lv.1 · Tier 2 Lv.2 · Tier 3 Lv.3 · Tier 4 Lv.4 · Tier 5 Lv.5 · Tier 6 Lv.7</small></div>
             <div class="shop-controls">
               <button class="button compact" id="reroll">Reroll · 2 LMD</button>
+              <button class="button compact" id="freeze-shop" aria-pressed="false" title="Keep these offers through the next round">Freeze Shop</button>
               <button class="button compact" id="buy-xp">Train · 4 LMD</button>
               <button class="button primary" id="fight">Start Battle</button>
             </div>
@@ -707,6 +712,7 @@
         report: document.querySelector("#report"),
         xpProgress: document.querySelector("#xp-progress"),
         reroll: document.querySelector("#reroll"),
+        freezeShop: document.querySelector("#freeze-shop"),
         buyXp: document.querySelector("#buy-xp"),
         fight: document.querySelector("#fight")
       };
@@ -719,6 +725,7 @@
         xp: 0,
         phase: "prep",
         shop: [],
+        shopFrozen: false,
         itemOffer: null,
         allies: [],
         enemies: [],
@@ -822,6 +829,7 @@
       }
 
       function rollShop() {
+        if (game.shopFrozen) return;
         const previousOffers = new Set(game.shop.filter(Boolean));
         const selected = new Set();
         const nextShop = [];
@@ -947,8 +955,8 @@
 
       function portraitMarkup(definition, enemy = false) {
         if (enemy) {
-          const accent = { raider: "#e88956", crawler: "#a9c45d", caster: "#bd8be0", drone: "#75c9d6", crusher: "#b4a77d" }[definition.enemyType] || "#e76d56";
-          const sigil = { raider: "R", crawler: "B", caster: "C", drone: "D", crusher: "H" }[definition.enemyType] || "!";
+          const accent = { raider: "#e88956", crawler: "#a9c45d", caster: "#bd8be0", drone: "#75c9d6", crusher: "#b4a77d", patriot: "#e4a04a", frostnova: "#9be7f2", skadi: "#e97879" }[definition.enemyType] || "#e76d56";
+          const sigil = { raider: "R", crawler: "B", caster: "C", drone: "D", crusher: "H", patriot: "P", frostnova: "F", skadi: "S" }[definition.enemyType] || "!";
           return `<span class="portrait hostile-portrait"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 48c1-10 7-14 15-16h10c9 2 14 7 15 16" fill="#302726"/><path d="M14 31 9 23c-2-4-1-10 2-14l7-5h12l8 6 1 11-5 10-6 7H18z" fill="#171b19" stroke="#82776b" stroke-width="1.5"/><path d="M8 17 10 8l9-6h12l9 7 1 8-7-4-5 2-6-3-7 4z" fill="#55564b"/><path d="M12 17h24l-3 7-7 3h-7l-6-4z" fill="#171c1b" stroke="${accent}" stroke-width="1.5"/><path d="M17 20h5m5 0h5" stroke="${accent}" stroke-width="2"/><path d="m18 29 6 3 6-3" fill="none" stroke="#8e7261" stroke-width="2"/><path d="M5 40h38" stroke="${accent}" stroke-width="3"/></svg><span class="portrait-mark">${sigil}</span></span>`;
         }
 
@@ -976,10 +984,10 @@
         }
         const look = enemy
           ? {
-            hair: definition.enemyType === "caster" ? "#43364c" : "#353a36",
-            accent: definition.enemyType === "caster" ? "#bd8be0" : definition.enemyType === "crusher" ? "#b4a77d" : "#d97159",
+            hair: ({ patriot: "#5c5142", frostnova: "#a9d8e0", skadi: "#544047" })[definition.enemyType] || (definition.enemyType === "caster" ? "#43364c" : "#353a36"),
+            accent: ({ patriot: "#e4a04a", frostnova: "#9be7f2", skadi: "#e97879" })[definition.enemyType] || (definition.enemyType === "caster" ? "#bd8be0" : definition.enemyType === "crusher" ? "#b4a77d" : "#d97159"),
             feature: "helmet",
-            coat: definition.enemyType === "crusher" ? "#77735f" : "#555b53",
+            coat: ({ patriot: "#65563f", frostnova: "#435e68", skadi: "#624349" })[definition.enemyType] || (definition.enemyType === "crusher" ? "#77735f" : "#555b53"),
             inner: "#39443d",
             trim: "#d8d9c8",
             pants: "#303833"
@@ -1006,6 +1014,7 @@
         const definition = definitionOf(unit);
         const role = escapeHtml(definition.role);
         const selected = game.selected === unit.uid ? " selected" : "";
+        const boss = enemy && definition.isBoss ? " boss" : "";
         const combat = game.phase === "battle";
         const preview = enemy && game.phase === "prep";
         const fullBody = combat || preview;
@@ -1013,7 +1022,7 @@
         const rank = unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : "";
         const health = unit.maxHp ? Math.max(0, unit.hp / unit.maxHp * 100) : 100;
         const top = preview ? (unit.y + .9) / gridHeight * 100 : (unit.y + .5) / gridHeight * 100;
-        return `<div class="unit-chip${enemy ? " enemy" : ""}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
+        return `<div class="unit-chip${enemy ? " enemy" : ""}${boss}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};--boss-color:${definition.color};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${boss ? "Boss " : ""}${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
       }
 
       function removeFlatBackground(image) {
@@ -1386,7 +1395,8 @@
       function render() {
         elements.gold.textContent = String(game.gold);
         elements.lifePoints.textContent = String(game.lifePoints);
-        elements.round.textContent = `Round ${game.round}`;
+        const bossRound = game.enemies.some(enemy => definitionOf(enemy).isBoss);
+        elements.round.textContent = bossRound ? `BOSS · ROUND ${game.round}` : `Round ${game.round}`;
         elements.phase.textContent = game.phase === "battle" ? "BATTLE PHASE" :
           game.phase === "awaiting-result" ? "AWAITING HOST" :
             game.phase === "gameover" ? "MISSION OVER" : "PREPARATION PHASE";
@@ -1398,6 +1408,10 @@
         elements.xpProgress.style.width = `${xpTarget() ? Math.min(100, game.xp / xpTarget() * 100) : 100}%`;
         const planningLocked = game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready;
         elements.reroll.disabled = planningLocked || game.gold < 2;
+        elements.freezeShop.disabled = planningLocked;
+        elements.freezeShop.textContent = game.shopFrozen ? "Unfreeze Shop" : "Freeze Shop";
+        elements.freezeShop.setAttribute("aria-pressed", String(game.shopFrozen));
+        elements.freezeShop.classList.toggle("freeze-active", game.shopFrozen);
         elements.buyXp.disabled = planningLocked || game.gold < 4 || game.level >= 7;
         elements.fight.disabled = multiplayerState.startingBattle ||
           multiplayerState.connected && (game.phase === "awaiting-result" || game.phase === "prep" && !multiplayerState.ready && fielded().length === 0) ||
@@ -1729,8 +1743,16 @@
       function reroll() {
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 2) return;
         game.gold -= 2;
+        game.shopFrozen = false;
         rollShop();
-        setReport("New operators are available in the shop.");
+        setReport("Shop rerolled. New offers are available.");
+        render();
+      }
+
+      function toggleShopFreeze() {
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
+        game.shopFrozen = !game.shopFrozen;
+        setReport(game.shopFrozen ? "Shop frozen. These offers will stay next round." : "Shop unfrozen. Offers will refresh next round.");
         render();
       }
 
@@ -1973,7 +1995,36 @@
 
       function makeEnemyWave() {
         const count = Math.min(7, 1 + Math.floor((game.round + 1) / 2));
-        return Array.from({ length: count }, (_, index) => makeEnemy(index, count));
+        if (game.round % 5 !== 0) return Array.from({ length: count }, (_, index) => makeEnemy(index, count));
+
+        const bosses = [
+          { id: "patriot", name: "Patriot", initials: "PT", role: "Defender", hp: 4200, attack: 280, defense: 280, resistance: 20, interval: 1.8, damageType: "physical", moveSpeed: .42, range: .9, color: "#e4a04a" },
+          { id: "frostnova", name: "FrostNova", initials: "FN", role: "Caster", hp: 3400, attack: 300, defense: 120, resistance: 35, interval: 1.6, damageType: "arts", moveSpeed: .62, range: 2.5, color: "#9be7f2" },
+          { id: "skadi", name: "Skadi", initials: "SK", role: "Guard", hp: 3800, attack: 390, defense: 180, resistance: 15, interval: 1.1, damageType: "physical", moveSpeed: 1, range: 1.15, color: "#e97879" }
+        ];
+        const boss = bosses[(Math.floor(game.round / 5) - 1) % bosses.length];
+        const minionCount = count - 1;
+        const minions = Array.from({ length: minionCount }, (_, index) => makeEnemy(index, minionCount));
+        const definition = {
+          ...boss,
+          enemyType: boss.id,
+          id: `${boss.id}-${game.round}`,
+          faction: "Hostile",
+          cost: 1,
+          isBoss: true
+        };
+        return [...minions, {
+          uid: `boss-${game.round}`,
+          type: definition.id,
+          definition,
+          team: "enemy",
+          location: "board",
+          x: Math.floor(gridWidth / 2),
+          y: 0,
+          rank: 1,
+          hp: 0,
+          maxHp: 0
+        }];
       }
 
       function startBattle() {
@@ -1993,7 +2044,10 @@
         }
         for (const enemy of game.enemies) effectiveStats(enemy, true);
         game.vanguardBonus = activeCounts().roleCounts.Vanguard >= 2 ? 1 : 0;
-        setReport(`Round ${game.round}: your operators automatically advance toward their targets.`);
+        const boss = game.enemies.find(enemy => definitionOf(enemy).isBoss);
+        setReport(boss
+          ? `BOSS ENCOUNTER: ${definitionOf(boss).name} has entered the battlefield.`
+          : `Round ${game.round}: your operators automatically advance toward their targets.`);
         render();
         game.frameTime = performance.now();
         requestAnimationFrame(battleFrame);
@@ -2171,6 +2225,7 @@
         game.level = 1;
         game.xp = 0;
         game.phase = "prep";
+        game.shopFrozen = false;
         game.allies = [];
         game.itemInventory = [];
         game.selectedItemIndex = null;
@@ -2211,6 +2266,7 @@
         if (slot) handleItemTrayClick(Number(slot.dataset.itemIndex));
       });
       elements.reroll.addEventListener("click", reroll);
+      elements.freezeShop.addEventListener("click", toggleShopFreeze);
       elements.buyXp.addEventListener("click", buyXp);
       elements.createRoom.addEventListener("click", () => connectToRoom(true));
       elements.joinRoom.addEventListener("click", () => connectToRoom(false));
