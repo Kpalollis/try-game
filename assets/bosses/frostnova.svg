@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96" viewBox="0 0 64 96" shape-rendering="crispEdges">
+  <title>FrostNova, pixel-art boss sprite</title>
+  <rect x="12" y="88" width="40" height="4" fill="#081014" opacity=".8"/>
+  <rect x="20" y="48" width="24" height="32" fill="#36515d"/>
+  <rect x="16" y="56" width="32" height="20" fill="#486b79"/>
+  <rect x="20" y="76" width="8" height="12" fill="#243841"/>
+  <rect x="36" y="76" width="8" height="12" fill="#243841"/>
+  <rect x="16" y="88" width="16" height="4" fill="#d5e6e9"/>
+  <rect x="32" y="88" width="16" height="4" fill="#d5e6e9"/>
+  <rect x="12" y="52" width="8" height="24" fill="#9be7f2"/>
+  <rect x="44" y="52" width="8" height="24" fill="#9be7f2"/>
+  <rect x="24" y="44" width="16" height="28" fill="#91c5d0"/>
+  <rect x="28" y="48" width="8" height="24" fill="#d9f3f4"/>
+  <rect x="24" y="24" width="16" height="24" fill="#e4eff0"/>
+  <rect x="20" y="20" width="8" height="24" fill="#b6dce1"/>
+  <rect x="36" y="20" width="8" height="24" fill="#b6dce1"/>
+  <rect x="16" y="12" width="8" height="16" fill="#d9f3f4"/>
+  <rect x="12" y="8" width="8" height="16" fill="#f1fbf7"/>
+  <rect x="40" y="12" width="8" height="16" fill="#d9f3f4"/>
+  <rect x="44" y="8" width="8" height="16" fill="#f1fbf7"/>
+  <rect x="24" y="16" width="16" height="24" fill="#e9f4f2"/>
+  <rect x="20" y="24" width="24" height="12" fill="#d3e8ea"/>
+  <rect x="24" y="28" width="16" height="8" fill="#334a56"/>
+  <rect x="24" y="28" width="4" height="4" fill="#8eeaff"/>
+  <rect x="36" y="28" width="4" height="4" fill="#8eeaff"/>
+  <rect x="28" y="36" width="8" height="4" fill="#89b7c1"/>
+  <rect x="20" y="44" width="8" height="8" fill="#bddde0"/>
+  <rect x="36" y="44" width="8" height="8" fill="#bddde0"/>
+  <rect x="4" y="32" width="4" height="4" fill="#f1fbf7"/>
+  <rect x="8" y="28" width="4" height="12" fill="#9be7f2"/>
+  <rect x="4" y="36" width="12" height="4" fill="#9be7f2"/>
+  <rect x="56" y="48" width="4" height="4" fill="#f1fbf7"/>
+  <rect x="52" y="44" width="4" height="12" fill="#9be7f2"/>
+  <rect x="48" y="48" width="12" height="4" fill="#9be7f2"/>
+  <rect x="28" y="12" width="4" height="8" fill="#f1fbf7"/>
+  <rect x="24" y="16" width="12" height="4" fill="#f1fbf7"/>
+  <rect x="20" y="80" width="24" height="4" fill="#9be7f2"/>
+</svg>

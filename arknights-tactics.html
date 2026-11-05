@@ -144,8 +144,12 @@
       transition: left 35ms linear, top 35ms linear, filter 120ms ease, opacity 120ms ease;
     }
     .unit-chip.combat-sprite.enemy { border: 0; background: transparent; }
+    .unit-chip.drone-sprite-chip { width: clamp(72px, 10vw, 104px); height: auto; aspect-ratio: 264 / 160; padding: 0; transform: translate(-50%, -50%); }
+    .unit-chip.drone-sprite-chip .drone-sheet { width: 100%; height: 100%; aspect-ratio: auto; overflow: hidden; border: 0; background-color: transparent; background-image: url("assets/enemies/drone-sheet.png"); background-repeat: no-repeat; background-size: 100% 800%; image-rendering: pixelated; animation: drone-idle 960ms steps(1, end) infinite; box-shadow: none; }
+    .unit-chip.drone-sprite-chip.swing .drone-sheet { animation: drone-fire 480ms steps(1, end) 1; }
     .unit-chip.combat-sprite.selected { outline: 0; }
     .combat-sprite .battle-figure { width: 100%; height: 100%; aspect-ratio: auto; overflow: visible; border: 0; background: transparent; box-shadow: none; }
+    .battle-figure .boss-sprite { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
     .battle-figure .battle-art { position: absolute; z-index: 2; inset: 0; display: none; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
     .battle-figure.has-walk-art .walk-frame { display: block; }
     .battle-figure.has-walk-art > svg { opacity: 0; }
@@ -351,6 +355,8 @@
     @keyframes arm-b { 0%, 100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }
     @keyframes weapon-swing { 0% { transform: rotate(0); } 45% { transform: rotate(-36deg); } 100% { transform: rotate(8deg); } }
     @keyframes strike-lunge { 0%, 100% { transform: translateY(0); } 45% { transform: translate(4px, -2px); } }
+    @keyframes drone-idle { 0% { background-position: 0 0; } 25% { background-position: 0 14.2857%; } 50% { background-position: 0 28.5714%; } 75% { background-position: 0 42.8571%; } }
+    @keyframes drone-fire { 0% { background-position: 0 57.1429%; } 25% { background-position: 0 71.4286%; } 50% { background-position: 0 85.7143%; } 75%, 100% { background-position: 0 100%; } }
 
     @media (max-width: 980px) {
       .workbench { grid-template-columns: minmax(0, 1fr) 235px; gap: 15px; }
@@ -976,11 +982,19 @@
       }
 
       function battleSpriteMarkup(definition, enemy = false) {
+        if (enemy && definition.isBoss) {
+          const bossSprite = {
+            patriot: "assets/bosses/patriot.svg",
+            frostnova: "assets/bosses/frostnova.svg",
+            skadi: "assets/bosses/skadi.svg"
+          }[definition.enemyType];
+          if (bossSprite) return `<span class="portrait battle-figure"><img class="boss-sprite" src="${bossSprite}" width="64" height="96" alt=""></span>`;
+        }
         if (enemy && definition.enemyType === "crawler") {
           return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="88" rx="18" ry="4" fill="#080c09" opacity=".55"/><path d="m20 63-10 13m17-10-2 15m15-15 2 15m4-18 10 13" fill="none" stroke="#718141" stroke-width="5" stroke-linecap="round"/><path d="M12 61c1-15 10-25 21-25s20 10 20 25c0 11-9 19-21 19S12 72 12 61z" fill="#70813e" stroke="#303b28" stroke-width="3"/><path d="m19 45-7-14 15 8m18 6 7-14-15 8" fill="#a5bb5a" stroke="#424b2d" stroke-width="3"/><path d="M21 57h7m8 0h7" stroke="#f4d777" stroke-width="4" stroke-linecap="round"/><path d="M24 68q8 5 16 0" fill="none" stroke="#303b28" stroke-width="2"/></svg></span>`;
         }
         if (enemy && definition.enemyType === "drone") {
-          return `<span class="portrait battle-figure"><svg viewBox="0 0 64 96" aria-hidden="true"><ellipse cx="32" cy="84" rx="17" ry="4" fill="#080c09" opacity=".55"/><path d="m23 44-15-9m33 9 15-9M23 58 8 68m33-10 15 10" stroke="#7eaeb1" stroke-width="4"/><circle cx="8" cy="34" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="56" cy="34" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="8" cy="69" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><circle cx="56" cy="69" r="6" fill="#7b8881" stroke="#c7d9ce" stroke-width="2"/><path d="m32 27 16 20-5 27H21l-5-27z" fill="#596b62" stroke="#252f2a" stroke-width="3"/><path d="m25 46 7-7 7 7-2 15h-10z" fill="#28342e" stroke="#8ed9dc" stroke-width="2"/><circle cx="32" cy="52" r="4" fill="#9ae8e6"/><path d="M27 74v8m10-8v8" stroke="#d7ed62" stroke-width="3"/></svg></span>`;
+          return `<span class="portrait battle-figure drone-sheet" aria-hidden="true"></span>`;
         }
         const look = enemy
           ? {
@@ -1015,6 +1029,7 @@
         const role = escapeHtml(definition.role);
         const selected = game.selected === unit.uid ? " selected" : "";
         const boss = enemy && definition.isBoss ? " boss" : "";
+        const drone = enemy && definition.enemyType === "drone" ? " drone-sprite-chip" : "";
         const combat = game.phase === "battle";
         const preview = enemy && game.phase === "prep";
         const fullBody = combat || preview;
@@ -1022,7 +1037,7 @@
         const rank = unit.rank > 1 ? `<span class="rank">R${unit.rank}</span>` : "";
         const health = unit.maxHp ? Math.max(0, unit.hp / unit.maxHp * 100) : 100;
         const top = preview ? (unit.y + .9) / gridHeight * 100 : (unit.y + .5) / gridHeight * 100;
-        return `<div class="unit-chip${enemy ? " enemy" : ""}${boss}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};--boss-color:${definition.color};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${boss ? "Boss " : ""}${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
+        return `<div class="unit-chip${enemy ? " enemy" : ""}${boss}${drone}${selected}${unit.dead ? " dead" : ""}${fullBody ? " combat-sprite" : ""}${preview ? " preview-sprite" : ""}" data-uid="${escapeHtml(unit.uid)}" style="--role-color:${roleColor(unit)};--boss-color:${definition.color};left:${(unit.x + .5) / gridWidth * 100}%;top:${top}%" title="${escapeHtml(definition.name)} · ${escapeHtml(roleNames[definition.role] || role)}" role="button" tabindex="0" aria-label="${boss ? "Boss " : ""}${escapeHtml(definition.name)}">${sprite}<span class="unit-name">${escapeHtml(definition.name)}</span><span class="unit-role">${escapeHtml(roleNames[definition.role] || role)}</span>${rank}<span class="health-track"><span class="health-fill" style="width:${health}%"></span></span></div>`;
       }
 
       function removeFlatBackground(image) {
