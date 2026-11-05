@@ -256,7 +256,7 @@
     .button.danger { color: #f4977f; }
     .button.compact { min-height: 29px; padding: 0 8px; }
 
-    .shop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+    .shop { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
     .shop-card {
       display: flex;
       min-width: 0;
@@ -278,6 +278,15 @@
     .shop-empty-label { font: 10px "Courier New", monospace; text-transform: uppercase; }
     .shop-top { display: flex; width: 100%; align-items: flex-start; justify-content: space-between; gap: 4px; }
     .shop-card .portrait { width: 34px; }
+    .item-shop-icon { display: grid; width: 38px; aspect-ratio: 1; place-items: center; border: 1px solid var(--role-color, var(--line)); color: var(--role-color, var(--acid)); font-size: 19px; }
+    .armory { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+    .item-tray { display: grid; grid-template-columns: repeat(8, minmax(44px, 1fr)); gap: 6px; }
+    .item-slot { display: grid; min-height: 48px; place-items: center; border: 1px solid var(--line); background: #171d19; color: var(--muted); }
+    .item-slot.has-item { border-top: 2px solid var(--item-color); color: var(--item-color); cursor: pointer; }
+    .item-slot.has-item:hover, .item-slot.selected { border-color: var(--item-color); background: #273128; }
+    .item-slot:disabled { opacity: .42; cursor: not-allowed; }
+    .item-slot.empty { border-style: dashed; }
+    .item-icon { font-size: 18px; line-height: 1; }
     .tier-badge { padding: 3px 5px; border: 1px solid var(--acid); color: var(--acid); font: 9px "Courier New", monospace; text-transform: uppercase; }
     .shop-name { margin-top: 7px; font-size: 12px; font-weight: 700; line-height: 1.1; }
     .shop-meta { margin-top: 3px; color: var(--muted); font: 9px "Courier New", monospace; }
@@ -318,7 +327,7 @@
     .selected-lore strong { color: var(--ink); font-weight: 400; }
     .selected-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; margin-top: 11px; color: var(--muted); font: 10px "Courier New", monospace; }
     .selected-stats strong { color: var(--ink); }
-    .selected-actions { display: flex; gap: 7px; margin-top: 10px; }
+    .selected-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
     .report { min-height: 46px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .report strong { color: var(--ink); }
     .round-progress { height: 3px; margin-top: 10px; background: #4a5449; }
@@ -375,7 +384,8 @@
       .zone-label { font-size: 8px; }
       .bench { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .bench-slot { min-height: 58px; }
-      .shop { grid-template-columns: repeat(5, minmax(98px, 1fr)); overflow-x: auto; padding-bottom: 5px; }
+      .shop { grid-template-columns: repeat(6, minmax(98px, 1fr)); overflow-x: auto; padding-bottom: 5px; }
+      .item-tray { grid-template-columns: repeat(8, 48px); overflow-x: auto; padding-bottom: 5px; }
       .shop-card { min-height: 112px; }
       .shop-heading { align-items: flex-start; flex-wrap: wrap; }
       .shop-controls { width: 100%; justify-content: flex-end; }
@@ -433,6 +443,11 @@
         <section class="bench-area" aria-label="Operator bench">
           <div class="bench-header"><h2>Bench</h2><span class="bench-caption"><span class="bench-count" id="bench-count">0</span> / 8 slots · deployed <span id="field-count">0</span> / <span id="unit-cap">3</span></span></div>
           <div class="bench" id="bench"></div>
+        </section>
+
+        <section class="armory" aria-label="Item inventory">
+          <div class="bench-header"><h2>Armory</h2><span class="bench-caption" id="armory-note">Win rounds to find items.</span></div>
+          <div class="item-tray" id="item-tray"></div>
         </section>
 
         <section class="shop-area" aria-label="Operator shop">
@@ -669,6 +684,8 @@
         tokenLayer: document.querySelector("#token-layer"),
         bench: document.querySelector("#bench"),
         shop: document.querySelector("#shop"),
+        itemTray: document.querySelector("#item-tray"),
+        armoryNote: document.querySelector("#armory-note"),
         gold: document.querySelector("#gold"),
         lifePoints: document.querySelector("#life-points"),
         createRoom: document.querySelector("#create-room"),
@@ -702,9 +719,12 @@
         xp: 0,
         phase: "prep",
         shop: [],
+        itemOffer: null,
         allies: [],
         enemies: [],
         selected: null,
+        selectedItemIndex: null,
+        itemInventory: [],
         nextId: 1,
         frameTime: 0,
         battleTime: 0,
@@ -748,9 +768,20 @@
         6: [30, 35, 22, 10, 3, 0],
         7: [20, 30, 25, 15, 8, 2]
       };
+      const itemDefinitions = {
+        originiumEdge: { name: "Originium Edge", icon: "⚔", effect: "+20% ATK", cost: 3, color: "#d7ed62" },
+        guardModule: { name: "Guard Module", icon: "▣", effect: "+25% DEF", cost: 3, color: "#73e5d2" },
+        relayChip: { name: "Relay Chip", icon: "⌁", effect: "+20% attack speed", cost: 3, color: "#ff765e" },
+        medicalKit: { name: "Medical Kit", icon: "+", effect: "+20% HP", cost: 3, color: "#f4977f" },
+        artsWard: { name: "Arts Ward", icon: "◇", effect: "+10 RES", cost: 3, color: "#bd8be0" },
+        rangeLens: { name: "Range Lens", icon: "◎", effect: "+0.35 range", cost: 3, color: "#75c9d6" },
+        lungEmblem: { name: "Lung Emblem", icon: "龍", effect: "Lung: +20% ATK", cost: 3, color: "#e4a04a", race: "Lung", buff: "attack", multiplier: 1.2 },
+        aegirTideCharm: { name: "Aegir Tide Charm", icon: "≈", effect: "Aegir: +20% HP", cost: 3, color: "#73e5d2", race: "Aegir", buff: "hp", multiplier: 1.2 },
+        kurantaSpurs: { name: "Kuranta Spurs", icon: "✦", effect: "Kuranta: +15% attack speed", cost: 3, color: "#c4a765", race: "Kuranta", buff: "rate", multiplier: 1.15 }
+      };
 
       function makeUnit(type, location, slot = 0, rank = 1) {
-        return { uid: String(game.nextId++), type, location, slot, x: 0, y: 0, rank, hp: 0, maxHp: 0, dead: false };
+        return { uid: String(game.nextId++), type, location, slot, x: 0, y: 0, rank, items: [], hp: 0, maxHp: 0, dead: false };
       }
 
       function availableShopTiers(excludedTypes = new Set()) {
@@ -805,6 +836,8 @@
           selected.add(type);
         }
         game.shop = nextShop;
+        const itemIds = Object.keys(itemDefinitions).filter(itemId => itemId !== game.itemOffer);
+        game.itemOffer = itemIds[Math.floor(Math.random() * itemIds.length)];
       }
 
       function activeCounts(team = fielded()) {
@@ -849,10 +882,24 @@
         const rankScale = 1 + (unit.rank - 1) * .65;
         let hpMultiplier = 1;
         let attackMultiplier = 1;
-        let range = definition.range;
+        let range = definition.range <= 1.15 ? Math.min(definition.range, 0.55) : definition.range;
         let defenseMultiplier = 1;
         let resistanceBonus = 0;
         let rateMultiplier = 1;
+        for (const itemId of unit.items || []) {
+          if (itemId === "originiumEdge") attackMultiplier *= 1.2;
+          if (itemId === "guardModule") defenseMultiplier *= 1.25;
+          if (itemId === "relayChip") rateMultiplier *= 1.2;
+          if (itemId === "medicalKit") hpMultiplier *= 1.2;
+          if (itemId === "artsWard") resistanceBonus += 10;
+          if (itemId === "rangeLens") range += .35;
+          const raceItem = itemDefinitions[itemId];
+          if (raceItem?.race === definition.race) {
+            if (raceItem.buff === "attack") attackMultiplier *= raceItem.multiplier;
+            if (raceItem.buff === "hp") hpMultiplier *= raceItem.multiplier;
+            if (raceItem.buff === "rate") rateMultiplier *= raceItem.multiplier;
+          }
+        }
         if (!isEnemy || unit.opponentId) {
           const { roleCounts, synergyCounts } = activeCounts(isEnemy ? game.enemies : fielded());
           const bonus = roleBonus(definition, roleCounts);
@@ -1217,6 +1264,38 @@
         }
       }
 
+      function renderItemTray() {
+        const selectedUnit = game.allies.find(unit => unit.uid === game.selected);
+        elements.armoryNote.textContent = game.itemInventory.length
+          ? selectedUnit
+            ? selectedUnit.items.length >= 2
+              ? `${definitionOf(selectedUnit).name}: equipment full.`
+              : `${definitionOf(selectedUnit).name} · ${selectedUnit.items.length}/2 items · click an item to equip`
+            : "Select an item, then an operator to equip it."
+          : "Buy an item in the shop to put it here.";
+        elements.itemTray.innerHTML = "";
+        for (let index = 0; index < 8; index++) {
+          const itemId = game.itemInventory[index];
+          const item = itemId && itemDefinitions[itemId];
+          const slot = document.createElement("button");
+          slot.type = "button";
+          slot.className = `item-slot${item ? " has-item" : " empty"}${game.selectedItemIndex === index ? " selected" : ""}`;
+          slot.disabled = !item || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready ||
+            selectedUnit && selectedUnit.items.length >= 2 && game.selectedItemIndex !== index;
+          if (item) {
+            slot.dataset.itemIndex = String(index);
+            slot.style.setProperty("--item-color", item.color);
+            slot.title = `${item.name}: ${item.effect}`;
+            slot.setAttribute("aria-label", `${item.name}, ${item.effect}${game.selectedItemIndex === index ? ", selected" : ""}`);
+            slot.innerHTML = `<span class="item-icon" aria-hidden="true">${item.icon}</span>`;
+          } else {
+            slot.setAttribute("aria-label", "Empty item slot");
+            slot.innerHTML = `<span aria-hidden="true">·</span>`;
+          }
+          elements.itemTray.append(slot);
+        }
+      }
+
       function renderShop() {
         elements.shop.innerHTML = "";
         game.shop.forEach((type, index) => {
@@ -1243,6 +1322,19 @@
           card.setAttribute("aria-label", `Buy ${definition.name}, ${definition.cost} LMD`);
           elements.shop.append(card);
         });
+        const item = itemDefinitions[game.itemOffer];
+        if (item) {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "shop-card item-shop-card";
+          card.dataset.itemOffer = "true";
+          card.style.setProperty("--role-color", item.color);
+          card.disabled = game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready ||
+            game.gold < item.cost || game.itemInventory.length >= 8;
+          card.innerHTML = `<span class="shop-top"><span class="item-shop-icon" aria-hidden="true">${item.icon}</span><span class="tier-badge">ITEM</span></span><span><span class="shop-name">${escapeHtml(item.name)}</span><span class="shop-meta">${escapeHtml(item.effect)}</span></span><span class="shop-cost">◈ ${item.cost} LMD</span>`;
+          card.setAttribute("aria-label", `Buy ${item.name}, ${item.cost} LMD`);
+          elements.shop.append(card);
+        }
       }
 
       function renderTraits() {
@@ -1284,6 +1376,8 @@
         const formatStat = value => new Intl.NumberFormat("en-US").format(value);
         elements.selectedInfo.querySelector(".selected-sub").textContent = `Tier ${operatorTier(definition)} · E${definition.elite} Lv.${definition.level} · DP ${definition.dpCost} · ${location}`;
         elements.selectedInfo.querySelector(".selected-stats").innerHTML = `<span>HP <strong>${formatStat(definition.hp)}</strong></span><span>ATK <strong>${formatStat(definition.attack)}</strong></span><span>DEF <strong>${formatStat(definition.defense)}</strong></span><span>RES <strong>${definition.resistance}</strong></span><span>INTERVAL <strong>${definition.interval.toFixed(2)}s</strong></span>`;
+        const equippedItems = (unit.items || []).map(itemId => itemDefinitions[itemId]).filter(Boolean);
+        elements.selectedInfo.insertAdjacentHTML("beforeend", `<p class="selected-lore"><strong>Equipment</strong> ${equippedItems.length ? equippedItems.map(item => `${escapeHtml(item.name)} (${escapeHtml(item.effect)})`).join(" · ") : "Empty · 0/2 slots"}</p>`);
         attachArt(elements.selectedInfo.querySelector(".portrait"), operatorAssets[definition.id]?.shop, "portrait-art", "has-shop-art");
         document.querySelector("#recall").addEventListener("click", recallSelected);
         document.querySelector("#sell").addEventListener("click", sellSelected);
@@ -1315,6 +1409,7 @@
         renderBoardTokens();
         renderBench();
         renderShop();
+        renderItemTray();
         renderTraits();
         renderSelected();
       }
@@ -1405,7 +1500,8 @@
             type: unit.type,
             rank: unit.rank,
             x: unit.x,
-            y: unit.y
+            y: unit.y,
+            items: [...unit.items]
           }))
         };
       }
@@ -1416,7 +1512,8 @@
         return snapshot.units.every(unit => {
           if (!byId[unit.type] || !Number.isInteger(unit.rank) || unit.rank < 1 || unit.rank > 3 ||
               !Number.isInteger(unit.x) || unit.x < 0 || unit.x >= gridWidth ||
-              !Number.isInteger(unit.y) || unit.y < 2 || unit.y > 3) return false;
+              !Number.isInteger(unit.y) || unit.y < 2 || unit.y > 3 ||
+              unit.items !== undefined && (!Array.isArray(unit.items) || unit.items.length > 2 || unit.items.some(itemId => !itemDefinitions[itemId]))) return false;
           const position = `${unit.x},${unit.y}`;
           if (occupied.has(position)) return false;
           occupied.add(position);
@@ -1440,6 +1537,7 @@
             hp: 0,
             maxHp: 0,
             dead: false,
+            items: unit.items || [],
             opponentId: playerId
           };
         });
@@ -1640,9 +1738,52 @@
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready || game.gold < 4 || game.level >= 7) return;
         game.gold -= 4;
         const progress = grantXp(4);
-        if (progress.levelsGained) rollShop();
         const tierMessage = progress.tierUnlocked ? ` Tier ${progress.currentTier} operators unlocked.` : "";
         setReport(`Training complete. +4 XP.${tierMessage} Level ${game.level} · deployment limit: ${unitCap()}.`);
+        render();
+      }
+
+      function equipItemToUnit(unit, itemIndex) {
+        const itemId = game.itemInventory[itemIndex];
+        const item = itemDefinitions[itemId];
+        if (!unit || !item || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
+        if (unit.items.length >= 2) {
+          game.selectedItemIndex = null;
+          setReport(`${definitionOf(unit).name} already has two items.`);
+          render();
+          return;
+        }
+        game.itemInventory.splice(itemIndex, 1);
+        unit.items.push(itemId);
+        game.selected = unit.uid;
+        game.selectedItemIndex = null;
+        setReport(`${item.name} equipped to ${definitionOf(unit).name}. ${item.effect}.`);
+        render();
+      }
+
+      function handleItemTrayClick(itemIndex) {
+        if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
+        const unit = game.allies.find(item => item.uid === game.selected);
+        if (unit) {
+          equipItemToUnit(unit, itemIndex);
+          return;
+        }
+        game.selectedItemIndex = game.selectedItemIndex === itemIndex ? null : itemIndex;
+        setReport(game.selectedItemIndex === null
+          ? "Item selection canceled."
+          : `Selected ${itemDefinitions[game.itemInventory[itemIndex]].name}. Choose an operator to equip it.`);
+        render();
+      }
+
+      function buyItemOffer() {
+        const itemId = game.itemOffer;
+        const item = itemDefinitions[itemId];
+        if (!item || game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready ||
+            game.gold < item.cost || game.itemInventory.length >= 8) return;
+        game.gold -= item.cost;
+        game.itemInventory.push(itemId);
+        game.itemOffer = null;
+        setReport(`${item.name} added to the Armory. Select it there to equip an operator.`);
         render();
       }
 
@@ -1710,6 +1851,10 @@
         if (game.phase !== "prep" || multiplayerState.connected && multiplayerState.ready) return;
         const unit = game.allies.find(item => item.uid === uid);
         if (!unit) return;
+        if (game.selectedItemIndex !== null) {
+          equipItemToUnit(unit, game.selectedItemIndex);
+          return;
+        }
         if (game.selected && game.selected !== uid) {
           const selected = game.allies.find(item => item.uid === game.selected);
           if (selected && selected.location === "bench" && unit.location === "board") {
@@ -1839,6 +1984,7 @@
         if (game.phase !== "prep" || fielded().length === 0) return;
         game.phase = "battle";
         game.selected = null;
+        game.selectedItemIndex = null;
         game.battleTime = 0;
         for (const unit of fielded()) {
           unit.homeX = unit.x;
@@ -2026,6 +2172,8 @@
         game.xp = 0;
         game.phase = "prep";
         game.allies = [];
+        game.itemInventory = [];
+        game.selectedItemIndex = null;
         game.enemies = multiplayerState.connected ? [] : makeEnemyWave();
         game.selected = null;
         rollShop();
@@ -2054,7 +2202,13 @@
       });
       elements.shop.addEventListener("click", event => {
         const card = event.target.closest(".shop-card");
-        if (card) buyOperator(Number(card.dataset.shopIndex));
+        if (!card) return;
+        if (card.dataset.itemOffer) buyItemOffer();
+        else buyOperator(Number(card.dataset.shopIndex));
+      });
+      elements.itemTray.addEventListener("click", event => {
+        const slot = event.target.closest("[data-item-index]");
+        if (slot) handleItemTrayClick(Number(slot.dataset.itemIndex));
       });
       elements.reroll.addEventListener("click", reroll);
       elements.buyXp.addEventListener("click", buyXp);
